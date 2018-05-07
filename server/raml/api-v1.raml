@@ -1,0 +1,17 @@
+#%RAML 1.0
+title: Test APIs
+version: v1
+baseUri: /api/{version}
+mediaType: application/json
+
+/test:
+  description: This is a testing API
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+            properties:
+                message: string
+

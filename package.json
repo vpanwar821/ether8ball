@@ -1,0 +1,31 @@
+{
+  "name": "ether8ball",
+  "version": "1.0.0",
+  "description": "This is a server for ether8ball pool ",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon --inspect -V -L --exec babel-node --inspect --presets es2015 server.js --inspect",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "production": "babel-node --presets es2015 server.js --inspect"
+  },
+  "author": "Ether8Ball",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "1.18.2",
+    "config": "1.30.0",
+    "cookie-parser": "1.4.3",
+    "express": "4.16.3",
+    "express-session": "1.15.6",
+    "mongoose": "5.0.16",
+    "nodemon": "1.17.4",
+    "npm": "^6.0.0",
+    "osprey": "0.5.0",
+    "winston": "2.4.2"
+  },
+  "devDependencies": {
+    "babel-cli": "6.26.0",
+    "babel-loader": "7.1.1",
+    "webpack": "2.1.0-beta.22",
+    "webpack-cli": "2.0.15"
+  }
+}
