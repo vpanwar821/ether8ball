@@ -16,10 +16,12 @@
     "cookie-parser": "1.4.3",
     "express": "4.16.3",
     "express-session": "1.15.6",
+    "hex-to-dec": "1.0.1",
     "mongoose": "5.0.16",
     "nodemon": "1.17.4",
     "npm": "^6.0.0",
     "osprey": "0.5.0",
+    "random-number": "0.0.9",
     "winston": "2.4.2"
   },
   "devDependencies": {
