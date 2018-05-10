@@ -3,6 +3,7 @@ const logger = require('../utils/logger');
 const config = require('config');
 var crypto = require('crypto');
 var hexToDec = require('hex-to-dec');
+
 //default constructor
 function Gene(){
     this.generation = 0;
@@ -51,7 +52,7 @@ Gene.prototype.cueRandomGene = function(){
     this.strength = randomNumberHex(1,8,1);
     this.time = randomNumberHex(1,8,1);
     this.xpPoints = randomNumberHex(0,1000,3);
-    this.vipPoints = randomNumberHex(0,16,1);
+    this.vipPoints = randomNumberHex(0,15,1);
     this.cashback = randomNumberHex(0,100,2);
     this.weight = randomNumberHex(17,21,2);
     this.material = randomNumberHex(1,10,1);
@@ -60,7 +61,10 @@ Gene.prototype.cueRandomGene = function(){
     var gen = this.generation + this.family + "0" + this.tip + "1" + this.shaft + "2" + this.shaftCollar + "3" + this.joint + "4" + this.forewrap + "5" + this.wrap + "6" + this.sleeve + "7" + this.buttCap 
                 + "8" + this.bumper + this.baseColor + this.complimentaryColor + this.spin + this.aim + this.strength + this.time + this.xpPoints + this.vipPoints
                 + this.cashback + this.weight + this.material + this.multiplier + this.random;
+    console.log(gen);
+    console.log(gen.length);
     var encryptedGene = encrypt(gen);
+    console.log(encryptedGene);
     return encryptedGene;
 }
 
@@ -89,7 +93,7 @@ Gene.prototype.cueGene = function(gene){
     this.weight = decryptedGene.substr(43,2);
     this.material = decryptedGene.substr(45,1);
     this.multiplier = decryptedGene.substr(46,1);
-    this.randomNumber = decryptedGene.substr(47,5);
+    this.random = decryptedGene.substr(47,5);
     return decryptedGene;
 }
 
@@ -122,7 +126,7 @@ Gene.prototype.reManufacture = function(gen1,gen2,gen3){
     var weightGene1 = decryptedGene1.substr(43,2);
     var materialGene1 = decryptedGene1.substr(45,1);
     var multiplierGene1 = decryptedGene1.substr(46,1);
-    var randomNumberGene1 = decryptedGene1.substr(47,5);
+    var randomGene1 = decryptedGene1.substr(47,5);
 
     //splitting of second cue
     var generationGene2 = decryptedGene2.substr(0,1);
@@ -148,7 +152,7 @@ Gene.prototype.reManufacture = function(gen1,gen2,gen3){
     var weightGene2 = decryptedGene2.substr(43,2);
     var materialGene2 = decryptedGene2.substr(45,1);
     var multiplierGene2 = decryptedGene2.substr(46,1);
-    var randomNumberGene2 = decryptedGene2.substr(47,5);
+    var randomGene2 = decryptedGene2.substr(47,5);
 
     //splitting of third cue
     var generationGene3 = decryptedGene3.substr(0,1);
@@ -174,9 +178,43 @@ Gene.prototype.reManufacture = function(gen1,gen2,gen3){
     var weightGene3 = decryptedGene3.substr(43,2);
     var materialGene3 = decryptedGene3.substr(45,1);
     var multiplierGene3 = decryptedGene3.substr(46,1);
-    var randomNumberGene3 = decryptedGene3.substr(47,5);
+    var randomGene3 = decryptedGene3.substr(47,5);
 
-    this.generation = hexToDec(generationGene1,generationGene2,generationGene3);
+    this.generation = mixGenerationGene(generationGene1,generationGene2,generationGene3,multiplierGene1,multiplierGene2,multiplierGene3);
+    console.log("generation",this.generation);
+    this.family = mixGene(familyGene1,familyGene2,familyGene3);
+    this.tip = mixGene(tipGene1,tipGene2,tipGene3);
+    this.shaft = mixGene(shaftGene1,shaftGene2,shaftGene3);
+    this.shaftCollar = mixGene(shaftCollarGene1,shaftCollarGene2,shaftCollarGene3);
+    this.joint = mixGene(jointGene1,jointGene2,jointGene3);
+    this.forewrap = mixGene(forewrapGene1,forewrapGene2,forewrapGene3);
+    this.wrap = mixGene(wrapGene1,wrapGene2,wrapGene3);
+    this.sleeve = mixGene(sleeveGene1,sleeveGene2,sleeveGene3);
+    this.buttCap = mixGene(buttCapGene1,buttCapGene2,buttCapGene3);
+    this.bumper = mixGene(bumperGene1,bumperGene2,bumperGene3);
+    this.baseColor = mixGene(baseColorGene1,baseColorGene2,baseColorGene3);
+    this.complimentaryColor = mixGene(complimentaryColorGene1,complimentaryColorGene2,complimentaryColorGene3);
+    this.spin = mixGene(spinGene1,spinGene2,spinGene3);
+    this.aim = mixGene(aimGene1,aimGene2,aimGene3);
+    this.strength = mixGene(strengthGene1,strengthGene2,strengthGene3);
+    this.time = mixGene(timeGene1,timeGene2,timeGene3);
+    this.xpPoints = mixGene(xpPointsGene1,xpPointsGene2,xpPointsGene3);
+    this.vipPoints = mixGene(vipPointsGene1,vipPointsGene2,vipPointsGene3);
+    this.cashback = mixGene(cashbackGene1,cashbackGene2,cashbackGene3);
+    this.weight = mixGene(weightGene1,weightGene2,weightGene3);
+    this.material = mixGene(materialGene1,materialGene2,materialGene3);
+    this.multiplier = mixGene(multiplierGene1,multiplierGene2,multiplierGene3);
+    this.random = mixGene(randomGene1,randomGene2,randomGene3);
+
+    var gen = this.generation + this.family + this.tip + this.shaft + this.shaftCollar + this.joint + this.forewrap + this.wrap + this.sleeve + this.buttCap 
+             + this.bumper + this.baseColor + this.complimentaryColor + this.spin + this.aim + this.strength + this.time + this.xpPoints + this.vipPoints
+             + this.cashback + this.weight + this.material + this.multiplier + this.random;
+    console.log(decryptedGene1);
+    console.log(decryptedGene2);
+    console.log(decryptedGene3);
+    console.log(gen);
+    var encryptedGene = encrypt(gen);
+    return encryptedGene;
 }
 
 function randomNumberHex(minNum,maxNum,value){
@@ -211,10 +249,83 @@ function decrypt(text){
     return dec;
 }
 
-function hexaToDecimal(num1,num2,num3){
-   num1 = hexToDec(num1);
-   num2 = hexToDec(num2);
-   num3 = hexToDec(num3);
+function mixGene(num1,num2,num3){
+   let number = randomNumber();
+   if(number <= 33){
+        return num1;
+   }
+   else if(number > 33 && number <= 66){
+        return num2;
+   }
+   else{
+        return num3;
+   }
 }
 
+function mixGenerationGene(num1,num2,num3,multiple1,multiple2,multiple3){
+  num1 = hexToDec(num1);
+  num2 = hexToDec(num2);
+  num3 = hexToDec(num3);
+  multiple1 = hexToDec(multiple1);
+  multiple2 = hexToDec(multiple2);
+  multiple3 = hexToDec(multiple3);
+  let num5 = 50;
+  let num6;
+  let minNum = Math.min(num1,num2,num3);
+  let maxNum = Math.max(num1,num2,num3);
+  if(minNum != 0){
+    minNum = minNum - 1;
+  }
+  if(maxNum != 10)
+  {
+    maxNum = maxNum + 1;
+  }
+  while(minNum <= maxNum){
+    let num4 = randomNumber();
+    if(maxNum == num1)
+    {
+        if(num4 < (num5+(multiple1*4))){
+            num6 = maxNum;
+            break;
+        }
+    }
+    else if(maxNum == num2){
+        if(num4 < (num5+(multiple2*4))){
+            num6 = maxNum;
+            break;
+        }
+    }
+    else if(maxNum == num3){
+        if(num4 < (num5+(multiple3*4))){
+            num6 = maxNum;
+            break;
+        }
+    }
+    else{
+        if(num4 < num5){
+            num6 = maxNum;
+            break;
+        }
+    }
+    console.log("num5",num5);
+    console.log("maxNum",maxNum);
+    num5 = num5 - 5; 
+    maxNum--;
+  }
+  if(num6 == undefined){
+      num6 = maxNum;
+  }
+  let num7 = num6.toString(16).toUpperCase();
+  return num7;
+}
+
+function randomNumber(){
+    var ranGen = rn.generator({
+        min:  1,
+        max:  100,
+        integer: true
+    });
+
+    return ranGen();
+}
 module.exports = Gene;

@@ -86,4 +86,11 @@ module.exports = function(router){
         },
         createRandomGene
     );
+
+    router.post('/remanufacture',
+        (req,res,next) => {
+            next();
+        },
+        geneRemanufacture
+    );
 }
