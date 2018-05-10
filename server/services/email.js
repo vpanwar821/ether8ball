@@ -1,7 +1,7 @@
 
 var aws  = require('aws-sdk');
 
-var config = require('../config/default.json');
+var config = require('config');
 
 var ses = new aws.SES({
        accessKeyId: config.ACCESSKEYID,

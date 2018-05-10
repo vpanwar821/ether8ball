@@ -3,9 +3,8 @@ var crypto = require("crypto");
 var async = require("async");
 var User = require("../models/user");
 var bcrypt = require('bcrypt-nodejs');
-var mail = require('../routes/email');
 const moment = require('moment');
-var mail = require('../routes/email');
+var mail = require('./email');
 module.exports={
 
     forgotPassword: async(email) => {							
@@ -98,7 +97,6 @@ module.exports={
                 if(user){
                     var validPassword = await comparePassword(oldPassword, user);
                     if(validPassword == true){
-                        console.log(email, oldPassword, password);
                         var hash = bcrypt.hashSync(password);
                         var myquery = {email:user.email};
                         var newvalues = {$set:{password:hash}};

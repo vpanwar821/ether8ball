@@ -1,14 +1,12 @@
 var mongoose = require('mongoose');
 var passport = require('passport');
-var config = require('../config/database');
+var config = require('config');
 require('../config/passport')(passport);
 var express = require('express');
 var jwt = require('jsonwebtoken');
 var router = express.Router();
 var User = require("../models/user");
 var services = require('../services/apiServices.js');
-
-// signup
 
 const createGene = async(req,res,next) => {
   try{
@@ -51,11 +49,12 @@ const signin = async(req,  res, next) => {
     if (!user) {
       res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
     } else {
+      
       // check if password matches
       user.comparePassword(req.body.password, function (err, isMatch) {
         if (isMatch && !err) {
           // if user is found and password is right create a token
-          var token = jwt.sign(user, config.secret);
+          var token = jwt.sign(user.toObject(), config.secret);
           // return the information including token as JSON
           res.json({success: true, token: 'JWT ' + token});
         } else {
@@ -84,8 +83,7 @@ const updateProfile = async(req,  res, next) => {
 }
 
 const getUsers= async(req,  res, next) => {
-  passport.authenticate('jwt', { session: false}), function(req, res) {
-    var token = getToken(req.headers);
+  var token = getToken(req.headers);
     if (token) {
       User.find(function (err, result) {
         if (err) return next(err);
@@ -94,13 +92,10 @@ const getUsers= async(req,  res, next) => {
     } else {
       return res.status(403).send({success: false, msg: 'Unauthorized.'});
     }
-  };
 };
-
 
 // get User Profile
 const getUser= async(req,  res, next) => {
-  passport.authenticate('jwt', { session: false}), function(req, res) {
     var token = getToken(req.headers);
     if (token) {
       User.findOne({"email": req.get('email')},function (err, result) {
@@ -110,7 +105,6 @@ const getUser= async(req,  res, next) => {
     } else {
       return res.status(403).send({success: false, msg: 'Unauthorized.'});
     }
-  };
 };
 
 
@@ -146,10 +140,8 @@ const forgotPasswordSet= async(req, res, next) => {
   }
 };
 
-
 // set resetPassword 
 const resetPassword= async(req,  res, next) => {
-  passport.authenticate('jwt', { session: false}), function(req, res) {
     var token = getToken(req.headers);
     var email =  req.body.email;
     var oldPassword = req.body.oldPassword;
@@ -166,14 +158,27 @@ const resetPassword= async(req,  res, next) => {
     } else {
       return res.status(403).send({"message": false, msg: 'Unauthorized.'});
     }
+};
+
+// authorization
+function getToken(headers) {
+  if (headers && headers.authorization) {
+    var parted = headers.authorization.split(' ');
+    if (parted.length === 2) {
+      return parted[1];
+    } else {
+      return null;
+    }
+  } else {
+    return null;
   }
 };
 
 
+
 module.exports = function(router){
   
-  router.post('/signup',
-      (req,res,next) => {
+  router.post('/signup', (req,res,next) => {
           next();            
       },
       singup
@@ -186,43 +191,37 @@ module.exports = function(router){
       signin
   );
 
-  router.post('/updateProfile',
-      (req,res,next) => {
+  router.post('/updateProfile', passport.authenticate('jwt', { session: false}), (req,res,next) => {
           next();            
       },
       updateProfile
   );
 
-  router.get('/getUsers',
-      (req,res,next) => {
-          next();            
+  router.get('/getUsers', passport.authenticate('jwt', { session: false}), (req,res,next) => {      
+    next();            
       },
       getUsers
   );
 
-  router.get('/getUser',
-      (req,res,next) => {
+  router.get('/getUser', passport.authenticate('jwt', { session: false}), (req,res,next) => {
           next();            
       },
       getUser
   );
 
-  router.get('/forgotPassword',
-      (req,res,next) => {
+  router.get('/forgotPassword', (req,res,next) => {
           next();            
       },
       forgotPassword
   );
 
-  router.post('/setForgotPassword',
-      (req,res,next) => {
+  router.post('/setForgotPassword', (req,res,next) => {
           next();            
       },
       forgotPasswordSet
   );
 
-  router.post('/resetPassword',
-      (req,res,next) => {
+  router.post('/resetPassword', passport.authenticate('jwt', { session: false}), (req,res,next) => {
           next();            
       },
       resetPassword
