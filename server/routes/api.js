@@ -7,6 +7,7 @@ var jwt = require('jsonwebtoken');
 var router = express.Router();
 var User = require("../models/user");
 var services = require('../services/apiServices.js');
+const logger = require('../utils/logger').logger;
 
 const createGene = async(req,res,next) => {
   try{

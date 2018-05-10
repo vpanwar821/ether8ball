@@ -12,6 +12,8 @@ var UserSchema = new Schema({
     zipCode: { type: String },
     forgotPassswordToken: { type: String},
     forgotPassswordTokenCreatedAt: { type: Date},
+    ETHAddress  : {type: String},
+    ETHPrivKey  : {type: String},
     email: {
         type: String,
         unique: true,

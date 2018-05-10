@@ -4,7 +4,9 @@ var async = require("async");
 var User = require("../models/user");
 var bcrypt = require('bcrypt-nodejs');
 const moment = require('moment');
+const logger = require('../utils/logger').logger;
 var mail = require('./email');
+
 module.exports={
 
     forgotPassword: async(email) => {							
@@ -35,6 +37,7 @@ module.exports={
                 return result; 
             }
         } catch(err) {
+            logger.error(err);
             throw err;
         }    
     },
@@ -116,6 +119,7 @@ module.exports={
                 return result;
             } 
         } catch(err) {
+            logger.error(err);
             throw err;
         }
     },
