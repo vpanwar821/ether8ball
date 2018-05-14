@@ -1,8 +1,9 @@
 var rn = require('random-number');
-const logger = require('../utils/logger');
+const logger = require('../utils/logger').logger;
 const config = require('config');
-var crypto = require('crypto');
 var hexToDec = require('hex-to-dec');
+
+import { encrypt,decrypt } from '../helpers/encryption';
 
 //default constructor
 function Gene(){
@@ -233,20 +234,6 @@ function randomNumberHex(minNum,maxNum,value){
         } 
     }
     return ran;
-}
-
-function encrypt(text) {
-    var cipher = crypto.createCipher(config.algorithm,config.password)
-    var crypted = cipher.update(text,'utf8','hex')
-    crypted += cipher.final('hex');
-    return crypted;
-}
-
-function decrypt(text){
-    var decipher = crypto.createDecipher(config.algorithm,config.password)
-    var dec = decipher.update(text,'hex','utf8')
-    dec += decipher.final('utf8');
-    return dec;
 }
 
 function mixGene(num1,num2,num3){

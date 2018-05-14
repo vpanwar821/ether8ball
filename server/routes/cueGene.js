@@ -1,5 +1,5 @@
 const logger = require('../utils/logger').logger;
-// import { cueGene,cueRanGene } from '../services/cueGeneService';
+import { cueImage } from '../services/cueService';
 var Gene = require('../services/Gene');
 var gene = new Gene();
 
@@ -72,6 +72,26 @@ const geneRemanufacture = async(req,res,next) => {
     }
 }
 
+const cueGeneration = async(req,res,next) => {
+    try{
+        let gene = req.body.gene;
+        let result = await cueImage(gene);
+        return res.status(200).send({
+            status:"success",
+            code:"200",
+            data:result
+        });
+    }
+    catch(err){
+        logger.error("Error in remanufacturing",err);
+        return res.status(500).send({
+            status:"error",
+            code:"500",
+            message:"Failure"
+        });
+    }
+}
+
 module.exports = function(router){
     router.post('/createGene',
         (req,res,next) => {
@@ -92,5 +112,12 @@ module.exports = function(router){
             next();
         },
         geneRemanufacture
+    );
+
+    router.post('/cueImage',
+        (req,res,next) => {
+            next();
+        },
+        cueGeneration
     );
 }
