@@ -63,4 +63,4 @@ typings/
 #Config file
 server/config/default.json
 
-.DS_store
+.DS_Store

@@ -2,14 +2,15 @@ var fs = require('fs')
   , gm = require('gm');
 var Enum = require('enum');
 var uuidv4 = require('uuid/v4');
+const config = require('config');
 
 import { encrypt,decrypt } from '../helpers/encryption';
 
 var cueFamily = new Enum(['Bronze','Silver','Gold','Platinum','Handcrafted']);
 
-export function cueImage(gene){
+export var cueImage =  async(gene) => {
     try{
-        var decryptedGene = decrypt(gene);
+        var decryptedGene = decrypt(gene,config.password);
         var generationGene = decryptedGene.substr(0,1);
         var familyGene = decryptedGene.substr(1,1);
         var tipGene = decryptedGene.substr(3,2);
@@ -47,7 +48,10 @@ export function cueImage(gene){
             __dirname+'/images/bronze/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
             .write(__dirname+'/images/cueimage/bronze/b_'+ uuidv4() +'.png', function (err) {
-            if (err) console.log(err);
+                if (err) {
+                    throw err;
+                    logger.error("Error in creating the bronze cue");        
+                }
             });
         }
 
@@ -62,7 +66,10 @@ export function cueImage(gene){
             __dirname+'/images/silver/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
             .write(__dirname+'/images/cueimage/silver/s_'+ uuidv4() +'.png', function (err) {
-            if (err) console.log(err);
+                if (err) {
+                    throw err;
+                    logger.error("Error in creating the silver cue");        
+                }
             });
         }
 
@@ -77,7 +84,10 @@ export function cueImage(gene){
             __dirname+'/images/gold/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
             .write(__dirname+'/images/cueimage/gold/g_'+ uuidv4() +'.png', function (err) {
-            if (err) console.log(err);
+                if (err) {
+                    throw err;
+                    logger.error("Error in creating the gold cue");        
+                }
             });
         }
 
@@ -92,7 +102,10 @@ export function cueImage(gene){
             __dirname+'/images/platinum/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
             .write(__dirname+'/images/cueimage/platinum/p_'+ uuidv4() +'.png', function (err) {
-            if (err) console.log(err);
+                if (err) {
+                    throw err;
+                    logger.error("Error in creating the platinum cue");        
+                }
             });
         }
 
@@ -107,19 +120,15 @@ export function cueImage(gene){
             __dirname+'/images/handcrafted/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
             .write(__dirname+'/images/handcrafted/platinum/h_'+ uuidv4() +'.png', function (err) {
-            if (err) console.log(err);
+                if (err) {
+                    throw err;
+                    logger.error("Error in creating the handcrafted cue");        
+                }
             });
         }
     }
     catch(err){
-
+        throw err;
+        logger.error("Error in creating the cue"); 
     }
 };
-
-// gm('/Users/vikas/Documents/workspace/ether8ball/server/images/sleeve.jpeg')
-// .geometry('1024x768+0+0')
-// .montage('/Users/vikas/Documents/workspace/ether8ball/server/images/shaft.png')
-// .geometry('1024x768-10+0')
-// .write('/Users/vikas/Documents/workspace/ether8ball/server/images/resultGM.png', function (err) {
-// if (err) console.log(err);
-// });

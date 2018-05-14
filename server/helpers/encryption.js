@@ -1,18 +1,36 @@
-var crypto = require('crypto');
-const config = require('config');
 
-function encrypt(text) {
-    var cipher = crypto.createCipher(config.algorithm,config.password)
-    var crypted = cipher.update(text,'utf8','hex')
-    crypted += cipher.final('hex');
-    return crypted;
+import crypto from 'crypto';
+import md5 from 'md5';
+
+const IV_LENGTH = 16; // For AES, this is always 16
+
+function encrypt(text, password) {
+  console.log('encrypt');
+  let iv = crypto.randomBytes(IV_LENGTH);
+  const hash = md5(password);
+  let cipher = crypto.createCipheriv('aes-256-cbc', new Buffer(hash), iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
 }
 
-function decrypt(text){
-    var decipher = crypto.createDecipher(config.algorithm,config.password)
-    var dec = decipher.update(text,'hex','utf8')
-    dec += decipher.final('utf8');
-    return dec;
+function decrypt(text, password) {
+  let textParts = text.split(':');
+  
+  let iv = new Buffer(textParts.shift(), 'hex');
+  let encryptedText = new Buffer(textParts.join(':'), 'hex');
+  const hash = md5(password);
+  let decipher = crypto.createDecipheriv('aes-256-cbc', new Buffer(hash), iv);
+  
+  let decrypted = decipher.update(encryptedText);
+
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  
+  return decrypted.toString();
 }
 
-module.exports = {encrypt,decrypt}
+
+export {
+    encrypt,
+    decrypt
+}

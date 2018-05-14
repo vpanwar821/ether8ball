@@ -99,7 +99,7 @@ function initServer() {
       });
   })
     .catch(function (e) {
-      logger.error("Error: %s", e);
+      logger.error("Error: %s", e.stack);
       process.exit(1)
     });
 }

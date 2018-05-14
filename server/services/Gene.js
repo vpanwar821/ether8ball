@@ -64,13 +64,13 @@ Gene.prototype.cueRandomGene = function(){
                 + this.cashback + this.weight + this.material + this.multiplier + this.random;
     console.log(gen);
     console.log(gen.length);
-    var encryptedGene = encrypt(gen);
+    var encryptedGene = encrypt(gen,config.password);
     console.log(encryptedGene);
     return encryptedGene;
 }
 
 Gene.prototype.cueGene = function(gene){
-    let decryptedGene = decrypt(gene);
+    let decryptedGene = decrypt(gene,config.password);
     this.generation = decryptedGene.substr(0,1);
     this.family = decryptedGene.substr(1,1);
     this.tip = decryptedGene.substr(2,3);
@@ -99,9 +99,9 @@ Gene.prototype.cueGene = function(gene){
 }
 
 Gene.prototype.reManufacture = function(gen1,gen2,gen3){
-    var decryptedGene1 = decrypt(gen1);
-    var decryptedGene2 = decrypt(gen2);
-    var decryptedGene3 = decrypt(gen3);
+    var decryptedGene1 = decrypt(gen1,config.password);
+    var decryptedGene2 = decrypt(gen2,config.password);
+    var decryptedGene3 = decrypt(gen3,config.password);
 
     //splitting of first cue
     var generationGene1 = decryptedGene1.substr(0,1);
@@ -214,7 +214,7 @@ Gene.prototype.reManufacture = function(gen1,gen2,gen3){
     console.log(decryptedGene2);
     console.log(decryptedGene3);
     console.log(gen);
-    var encryptedGene = encrypt(gen);
+    var encryptedGene = encrypt(gen,config.password);
     return encryptedGene;
 }
 
