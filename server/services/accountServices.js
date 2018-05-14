@@ -12,30 +12,31 @@ module.exports={
     forgotPassword: async(email) => {							
         var token;
         var result = {};
+        
         try {
             var buf = await crypto.randomBytes(20);
             token = buf.toString('hex');
             var user = await User.findOne({"email": email});
+
             if(!user){
                 throw "user does not exist";                    
             }else{                  
-                if(user){  
-                    var sendToEmail = user.email;
-                    var userName = user.firstName;
-                    // let mail = await mail.forgotPasswordLink(sendToEmail,userName, token);
-                    var time = Date.now();
-                    var myquery = {email:user.email};
-                    var newvalues = {$set:{forgotPassswordToken:token, forgotPassswordTokenCreatedAt: time}};
-                    var res = await User.update(myquery,newvalues);
-                    if(res.n != 0 || res.nModified !=0) {
-                        result.token = token;
-                        result.message = "Token update in database";
-                    } else {
-                        throw "Error  in updating token";
-                    }    
-                }
-                return result; 
+ 
+                var sendToEmail = user.email;
+                var userName = user.firstName;
+                // let mail = await mail.forgotPasswordLink(sendToEmail,userName, token);
+                var time = Date.now();
+                var myquery = {email:user.email};
+                var newvalues = {$set:{forgotPassswordToken:token, forgotPassswordTokenCreatedAt: time}};
+                var res = await User.update(myquery,newvalues);
+                if(res.n != 0 || res.nModified !=0) {
+                    result.token = token;
+                    result.message = "Token update in database";
+                } else {
+                    throw "Error  in updating token";
+                }    
             }
+            return result; 
         } catch(err) {
             logger.error(err);
             throw err;

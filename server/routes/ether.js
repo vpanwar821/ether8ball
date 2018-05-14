@@ -3,13 +3,14 @@ const ethers = require('ethers');
 const config = require('config');
 import {encrypt} from '../helpers/encryption';
 import rp from 'request-promise';
-import { createRawTransaction, sendTransaction, web3, balanceOfToken, transferToken, createRawTransactionAdmin } from '../services/ethereumService.js';
+import { createRawTransaction, web3} from '../services/ethereumService.js';
 import BigNumber from 'bignumber.js';
 // import { completeTxMail, cancelTxMail} from '../services/mail';
 var User = require("../models/user");
 const apiKey = config.ETHERSCAN_API_KEY;
 const end_of_url = `&startblock=0&endblock=99999999&sort=asc&apikey=${apiKey}`;
 let start_of_url;
+
 if(config.TESTING === true){
     start_of_url = config.ETHERSCAN_API_URL_DEV;
 }
@@ -59,63 +60,21 @@ const etherTransactionHistory = async(req,res,next) => {
     // ETHERSCAN
     let apiUrl = start_of_url + ethAddress + end_of_url;
   
-    rp(apiUrl)
-        .then(json => {
-            const transactionHistory = JSON.parse(json).result;
-            return res.status(200).json({
-                "transactions": transactionHistory
-            });
-        }).catch(e => {
-          logger.error('error in getting in ether transaction history',e);
-            return res.status(500).send({
-                "status": "Failure",
-                "code": 500,
-                "message": "Error: Transaction History",
-            });
+    rp(apiUrl).then(json => {
+        const transactionHistory = JSON.parse(json).result;
+        return res.status(200).json({
+            "transactions": transactionHistory
         });
-  
-  }
-  
-  
-const etherTransactionHash = async(req,res,next) => {
-  
-        if (!req.params.hash) {
-            return res.json({
-                "status": "Failure",
-                "code": 400,
-                "message": "Missing parameters",
-            })
-        }
-        let hash = req.params.hash;
-        let apiUrl;
-        // ETHERSCAN
-        if(config.TESTING == true)
-        {
-            apiUrl = `https://ropsten.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${hash}&apikey=${apiKey}`;
-        }
-        else{
-            apiUrl = `https://api.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${hash}&apikey=${apiKey}`;
-        }
-  
-        rp(apiUrl)
-            .then(json => {
-                const transactionHistory = JSON.parse(json).result;
-                logger.info("ether transaction from hash:",transactionHistory);
-                return res.status(200).json({
-                    "transactions": transactionHistory
-                });
-        }).catch(e => {
-                logger.error("error in ether transaction hash:",e);
-                return res.status(500).send({
-                    "status": "Failure",
-                    "code": 500,
-                    "message": "Error: Transaction History",
-                });
+    }).catch(e => {
+        logger.error('error in getting in ether transaction history',e);
+        return res.status(500).send({
+            "status": "Failure",
+            "code": 500,
+            "message": "Error: Transaction History",
         });
-  
+    });
 }
-  
-  
+    
 const getEtherBalance = async(req, res, next) => {
 
     try{
@@ -175,9 +134,9 @@ const transferEther = async(req,res,next) => {
     var etherAmount = (req.body.value)- 0.000861;
    
     logger.info("Entered into the transfer ether for user:"+req.body.email);
-    try{
     
-         let user = await User.findOne({"email":req.body.email});
+    try{
+        let user = await User.findOne({"email":req.body.email});
         const keys = { pubkey: user.ETHAddress, privkey: user.ETHPrivKey };
         rawTx = await createRawTransaction('', keys, req.body.ethereumAddress, (new BigNumber(etherAmount).times(new BigNumber(10).pow(18))).toNumber(), password, req.body.gas);
         logger.info("Raw transaction generated successfully");
@@ -190,10 +149,10 @@ const transferEther = async(req,res,next) => {
             "message": "Error in creating the transaction check parameters.",
         });
     }
+
     try{
         web3.eth.sendSignedTransaction('0x' + rawTx.toString('hex'))
         .on('receipt', async (receipt) =>{
-            let user = await User.findOne({"email":req.body.email});
             logger.info("Ether transferred successfully");
             // let mail = await completeTxMail(user.email,coin);
             return res.status(200).send({
@@ -238,13 +197,6 @@ module.exports = function (router) {
             next();
         },
         etherTransactionHistory
-    );
-
-    router.get('/etherTransactionHash/{hash}',
-        (req,res,next) => {
-            next();
-        },
-        etherTransactionHash
     );
 
     router.get('/getEtherBalance/{address}',
