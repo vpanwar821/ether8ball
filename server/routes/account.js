@@ -6,7 +6,7 @@ var express = require('express');
 var jwt = require('jsonwebtoken');
 var router = express.Router();
 var User = require("../models/user");
-var services = require('../services/accountServices.js');
+var services = require('../services/accountService.js');
 const logger = require('../utils/logger').logger;
 
 const signup = async(req,	res, next) => {
@@ -59,7 +59,7 @@ const signin = async(req,	res, next) => {
 
 
 // updateUserProfile with email id
-const updateProfile = async(req,	res, next) => {
+const updateProfile = async(req,res, next) => {
 	
 	var token = getToken(req.headers);
 	

@@ -36,7 +36,6 @@ class Gene {
 
 
     cueRandomGene(){
-        this.generation = randomNumberHex(0,10,1);
         this.family = randomNumberHex(0,4,1);
         this.tip = randomNumberHex(1,30,2);
         this.shaft = randomNumberHex(1,30,2);
@@ -60,7 +59,7 @@ class Gene {
         this.material = randomNumberHex(1,10,1);
         this.multiplier = randomNumberHex(0,10,1);
         this.random = randomNumberHex(0,1048575,5);
-        var gen = this.generation + this.family + "0" + this.tip + "1" + this.shaft + "2" + this.shaftCollar + "3" + this.joint + "4" + this.forewrap + "5" + this.wrap + "6" + this.sleeve + "7" + this.buttCap 
+        var gen = "0" + this.family + "0" + this.tip + "1" + this.shaft + "2" + this.shaftCollar + "3" + this.joint + "4" + this.forewrap + "5" + this.wrap + "6" + this.sleeve + "7" + this.buttCap 
                     + "8" + this.bumper + this.baseColor + this.complimentaryColor + this.spin + this.aim + this.strength + this.time + this.xpPoints + this.vipPoints
                     + this.cashback + this.weight + this.material + this.multiplier + this.random;
         var encryptedGene = encrypt(gen,config.password);
