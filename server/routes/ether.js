@@ -74,7 +74,46 @@ const etherTransactionHistory = async(req,res,next) => {
         });
     });
 }
-    
+
+
+const etherTransactionHash = async(req,res,next) => {
+  
+    if (!req.params.hash) {
+        return res.json({
+            "status": "Failure",
+            "code": 400,
+            "message": "Missing parameters",
+        })
+    }
+    let hash = req.params.hash;
+    let apiUrl;
+    // ETHERSCAN
+    if(config.TESTING == true)
+    {
+        apiUrl = `https://ropsten.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${hash}&apikey=${apiKey}`;
+    }
+    else{
+        apiUrl = `https://api.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${hash}&apikey=${apiKey}`;
+    }
+
+    rp(apiUrl)
+        .then(json => {
+            const transactionHistory = JSON.parse(json).result;
+            logger.info("ether transaction from hash:",transactionHistory);
+            return res.status(200).json({
+                "transactions": transactionHistory
+            });
+    }).catch(e => {
+            logger.error("error in ether transaction hash:",e);
+            return res.status(500).send({
+                "status": "Failure",
+                "code": 500,
+                "message": "Error: Transaction History",
+            });
+    });
+
+}
+
 const getEtherBalance = async(req, res, next) => {
 
     try{
@@ -211,5 +250,17 @@ module.exports = function (router) {
             next();
         },
         transferEther
+    );
+
+    router.get('/etherTransactionHistory/{address}', (req,res,next) => {
+        next();
+    },
+        etherTransactionHistory
+    );
+
+    router.get('/etherTransactionHash/{hash}', (req,res,next) => {
+        next();
+    },
+        etherTransactionHash
     );
 }
