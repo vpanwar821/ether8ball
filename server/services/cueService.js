@@ -3,13 +3,15 @@ var fs = require('fs')
 var Enum = require('enum');
 var uuidv4 = require('uuid/v4');
 const config = require('config');
+const logger = require('../utils/logger').logger;
 
 import { encrypt,decrypt } from '../helpers/encryption';
+import { getCueId } from './cueCoreService';
 
 var cueFamily = new Enum(['Bronze','Silver','Gold','Platinum','Handcrafted']);
 
 export var cueImage =  async(gene) => {
-    try{
+    return new Promise((resolve,reject) => {
         var decryptedGene = decrypt(gene,config.password);
         var generationGene = decryptedGene.substr(0,1);
         var familyGene = decryptedGene.substr(1,1);
@@ -36,6 +38,9 @@ export var cueImage =  async(gene) => {
         var multiplierGene = decryptedGene.substr(46,1);
         var randomGene = decryptedGene.substr(47,5);
 
+        var cueId = getCueId(gene);
+        // var cueId = "90000";
+
         if(familyGene == 0){
 
             gm(__dirname+'/images/bronze/tip/'+tipGene+'.png').append(__dirname+'/images/bronze/shaft/'+shaftGene+'.png',
@@ -47,10 +52,15 @@ export var cueImage =  async(gene) => {
             __dirname+'/images/bronze/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/bronze/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .write(__dirname+'/images/cueimage/bronze/b_'+ uuidv4() +'.png', function (err) {
+            .write(__dirname+'/images/cueimage/bronze/'+ cueId +'.png', function (err) {
                 if (err) {
-                    throw err;
-                    logger.error("Error in creating the bronze cue");        
+                    logger.error("Error in creating the bronze cue",err);     
+                    return reject(err);
+                }
+                else {
+                    logger.info("Successfully created the bronze cue.CueId",cueId);
+                    let url = __dirname+'/images/cueimage/bronze/'+ cueId +'.png';
+                    return resolve(url);
                 }
             });
         }
@@ -65,10 +75,15 @@ export var cueImage =  async(gene) => {
             __dirname+'/images/silver/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/silver/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .write(__dirname+'/images/cueimage/silver/s_'+ uuidv4() +'.png', function (err) {
+            .write(__dirname+'/images/cueimage/silver/'+ cueId +'.png', function (err) {
                 if (err) {
-                    throw err;
-                    logger.error("Error in creating the silver cue");        
+                    logger.error("Error in creating the silver cue",err);     
+                    return reject(err);
+                }
+                else {
+                    logger.info("Successfully created the silver cue.CueId",cueId);
+                    let url = __dirname+'/images/cueimage/silver/'+ cueId +'.png';
+                    return resolve(url);
                 }
             });
         }
@@ -83,10 +98,15 @@ export var cueImage =  async(gene) => {
             __dirname+'/images/gold/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/gold/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .write(__dirname+'/images/cueimage/gold/g_'+ uuidv4() +'.png', function (err) {
+            .write(__dirname+'/images/cueimage/gold/'+ cueId +'.png', function (err) {
                 if (err) {
-                    throw err;
-                    logger.error("Error in creating the gold cue");        
+                    logger.error("Error in creating the gold cue",err);     
+                    return reject(err);
+                }
+                else {
+                    logger.info("Successfully created the gold cue.CueId",cueId);
+                    let url = __dirname+'/images/cueimage/gold/'+ cueId +'.png';
+                    return resolve(url);
                 }
             });
         }
@@ -101,10 +121,15 @@ export var cueImage =  async(gene) => {
             __dirname+'/images/platinum/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/platinum/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .write(__dirname+'/images/cueimage/platinum/p_'+ uuidv4() +'.png', function (err) {
+            .write(__dirname+'/images/cueimage/platinum/'+ cueId +'.png', function (err) {
                 if (err) {
-                    throw err;
-                    logger.error("Error in creating the platinum cue");        
+                    logger.error("Error in creating the platinum cue",err);     
+                    return reject(err);
+                }
+                else {
+                    logger.info("Successfully created the platinum cue.CueId",cueId);
+                    let url = __dirname+'/images/cueimage/platinum/'+ cueId +'.png';
+                    return resolve(url);
                 }
             });
         }
@@ -119,16 +144,17 @@ export var cueImage =  async(gene) => {
             __dirname+'/images/handcrafted/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/handcrafted/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .write(__dirname+'/images/handcrafted/platinum/h_'+ uuidv4() +'.png', function (err) {
+            .write(__dirname+'/images/cueimage/handcrafted/'+ cueId +'.png', function (err) {
                 if (err) {
-                    throw err;
-                    logger.error("Error in creating the handcrafted cue");        
+                    logger.error("Error in creating the handcrafted cue",err);     
+                    return reject(err);
+                }
+                else {
+                    logger.info("Successfully created the handcrafted cue.CueId",cueId);
+                    let url = __dirname+'/images/cueimage/handcrafted/'+ cueId +'.png';
+                    return resolve(url);
                 }
             });
         }
-    }
-    catch(err){
-        throw err;
-        logger.error("Error in creating the cue"); 
-    }
+    });
 };

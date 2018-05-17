@@ -9,4 +9,4 @@ var AuctionSchema = new Schema({
 });
 
 
-module.exports = mongoose.model('Lend', AuctionSchema);
+module.exports = mongoose.model('Auction', AuctionSchema);

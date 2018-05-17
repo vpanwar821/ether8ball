@@ -9,7 +9,7 @@ var User = require("../models/user");
 var services = require('../services/accountService.js');
 const logger = require('../utils/logger').logger;
 
-const signup = async(req,	res, next) => {
+const signup = async(req,res, next) => {
 		
 	if (!req.body.email || !req.body.password) {
 		res.json({success: false, msg: 'Please pass username and password.'});
