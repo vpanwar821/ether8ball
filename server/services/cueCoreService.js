@@ -1,6 +1,8 @@
 import { web3 } from './ethereumService';
 const config = require('config');
 var contractAddress;
+import BigNumber from 'bignumber.js';
+import { logger } from '../utils/logger';
 
 const contractAbi = [
 	{
@@ -42,7 +44,12 @@ const contractAbi = [
 			}
 		],
 		"name": "createGen0Auction",
-		"outputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -56,7 +63,12 @@ const contractAbi = [
 			}
 		],
 		"name": "createGen0Cue",
-		"outputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -857,22 +869,32 @@ const contractAbi = [
 ]
 
 if(config.TESTING == true) {
-    contractAddress = config.AUCTION_CONTRACT_ADDRESS_DEV;
+    contractAddress = config.CUE_CONTRACT_ADDRESS_DEV;
 }
 else {
-    contractAddress = config.AUCTION_CONTRACT_ADDRESS_PROD;
+    contractAddress = config.CUE_CONTRACT_ADDRESS_PROD;
 }
 
-const auctionContract = new web3.eth.Contract(contractAbi, contractAddress);
+const Contract = new web3.eth.Contract(contractAbi, contractAddress);
 
-// export function getCueId(gene){
-//     return Contract.createGen0Auction(gene).encodeABI();
-// } 
-
-export function getCueId(gene){
-    return Contract.createGen0Auction.call(gene);
+export const generateCueId = async(gene) => {
+	try{
+		let result = Contract.methods.createGen0Cue(gene).encodeABI();
+		return result;
+	}
+	catch(err){
+		logger.error("error in generateCueId method",err);
+	}
 } 
 
-// export function getGene(cueId){
-//     return Contract.getGeneId.call(cueId);
-// }
+export const getGene = async(cueId) => {
+	try{
+		let result  = await Contract.methods.getCue(cueId).call();
+		return result.genes;
+	}
+	catch(err){
+		logger.error("Error in getGene method",err);
+	}
+} 
+
+

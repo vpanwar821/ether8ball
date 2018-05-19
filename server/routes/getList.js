@@ -63,7 +63,7 @@ const createFamily = async(req,res,next) => {
 }
 
 module.exports = function(router){
-    router.post('/auctionList',
+    router.get('/auctionList',
         (req,res,next) => {
             next();
         },

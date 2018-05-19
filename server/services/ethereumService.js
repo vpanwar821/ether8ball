@@ -21,8 +21,8 @@ else{
 export const createRawTransaction = async(code, keys, to, value, password, gas) => {        
     let gasPrice;
 	if (gas === null || gas === undefined || parseInt(gas) < 50000) {
-	    gas = 70000;
-		gasPrice = 11000000000;
+	    gas = 350000;
+		gasPrice = 21000000000;
 	}
     else {
 		gas = parseInt(gas);

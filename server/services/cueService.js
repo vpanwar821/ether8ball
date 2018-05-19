@@ -6,11 +6,12 @@ const config = require('config');
 const logger = require('../utils/logger').logger;
 
 import { encrypt,decrypt } from '../helpers/encryption';
-import { getCueId } from './cueCoreService';
+import { getGene } from './cueCoreService';
 
 var cueFamily = new Enum(['Bronze','Silver','Gold','Platinum','Handcrafted']);
 
-export var cueImage =  async(gene) => {
+export var cueImage =  async(cueId) => {
+    var gene = await getGene(cueId);
     return new Promise((resolve,reject) => {
         var decryptedGene = decrypt(gene,config.password);
         var generationGene = decryptedGene.substr(0,1);
@@ -38,7 +39,6 @@ export var cueImage =  async(gene) => {
         var multiplierGene = decryptedGene.substr(46,1);
         var randomGene = decryptedGene.substr(47,5);
 
-        var cueId = getCueId(gene);
         // var cueId = "90000";
 
         if(familyGene == 0){
