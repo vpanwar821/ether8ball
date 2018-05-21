@@ -12,21 +12,31 @@ const logger = require('../utils/logger').logger;
 const signup = async(req,res, next) => {
 		
 	if (!req.body.email || !req.body.password) {
-		res.json({success: false, msg: 'Please pass username and password.'});
+		return res.status(500).send({
+            status:"error",
+            code:"500",
+            message:"Failure",
+        });
 	} else {
 		var newUser = new User({
 			email: req.body.email,
 			password: req.body.password,
-			phoneNo: req.body.phoneNo,
-			firstName: req.body.firstName,
-			lastName:	req.body.lastName
+			name: req.body.name,
 		});
 		// save the user
 		newUser.save(function(err) {
 			if (err) {
-				return res.json({success: false, msg: 'Email already exists.'});
+				return res.status(500).send({
+					status:"error",
+					code:"500",
+					message:"Email already exists",
+				});
 			}
-			res.json({success: true, msg: 'Successful created new user.'});
+			return res.status(200).send({
+				status:"success",
+				code:"200",
+				message:"Successful created new user",
+			});
 		});
 	}
 };
@@ -40,7 +50,12 @@ const signin = async(req,	res, next) => {
 		if (err) throw err;
 
 		if (!user) {
-			res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"Authentication failed. User not found",
+			});
+			
 		} else {
 			// check if password matches
 			user.comparePassword(req.body.password, function (err, isMatch) {
@@ -48,16 +63,55 @@ const signin = async(req,	res, next) => {
 					// if user is found and password is right create a token
 					var token = jwt.sign(user.toObject(), config.SECRET);
 					// return the information including token as JSON
-					res.json({success: true, token: 'JWT ' + token});
+					return res.status(200).send({
+						status:"success",
+						code:"200",
+						token: 'JWT ' + token,
+						message:"JWT token created successfully",
+					});
 				} else {
-					res.status(401).send({success: false, msg: 'Authentication failed. Wrong password.'});
+					return res.status(500).send({
+						status:"error",
+						code:"500",
+						message:"Authentication failed. Wrong password",
+					});
 				}
 			});
 		}
 	});
 };
 
-
+// login and signup with gmail api
+const loginWithGoogle = async(req,  res, next) => {
+	if (!req.body.email) {
+		return res.status(500).send({
+			status:"error",
+			code:"500",
+			message:"Please pass your emailID",
+		});
+	} else {
+	  var newUser = new User();
+	  newUser.id = req.body.id;
+	  newUser.token = req.body.idToken;
+	  newUser.name = req.body.name;
+	  newUser.email = req.body.email;
+	  // save the user
+	  newUser.save(function(err) {
+		if (err) {
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"Email already exists",
+			});
+		}
+		return res.status(200).send({
+			status:"success",
+			code:"200",
+			message:"Successful created new user",
+		});
+	  });
+	}
+};
 // updateUserProfile with email id
 const updateProfile = async(req,res, next) => {
 	
@@ -65,12 +119,19 @@ const updateProfile = async(req,res, next) => {
 	
 	if (token) {
 		myquery = {email:req.body.email};
-		myvalues = {$set:{ firstName: req.body.firstName, lastName: req.body.lastName, gender: req.body.gender, phoneNo:req.body.phoneNo}};
+		myvalues = {$set:{ name: req.body.name, gender: req.body.gender, phoneNo:req.body.phoneNo}};
 		var doo = await User.update(myquery,myvalues);
-		res.json({success: true, msg: 'Successful updated user profile.'});
-										
+		return res.status(200).send({
+			status:"success",
+			code:"200",
+			message:"Successful updated user profile",
+		});							
 	} else {
-		return res.status(403).send({success: false, msg: 'Unauthorized.'});
+		return res.status(500).send({
+			status:"error",
+			code:"500",
+			message:"Unauthorized user",
+		});
 	}
 }
 
@@ -80,10 +141,19 @@ const getUsers= async(req,	res, next) => {
 	if (token) {
 		User.find({},{"ETHPrivKey":0, _id:0}, function (err, result) {
 			if (err) return next(err);
-			res.json(result);
+			return res.status(200).send({
+				status:"success",
+				code:"200",
+				message:"Successful getting users list",
+				data: result
+			});
 		});
 	} else {
-		return res.status(403).send({success: false, msg: 'Unauthorized.'});
+		return res.status(500).send({
+			status:"error",
+			code:"500",
+			message:"Unauthorized",
+		});
 	}
 };
 
@@ -93,24 +163,41 @@ const getUserProfile= async(req,	res, next) => {
 	if (token) {
 		User.findOne({"email": req.params.email},{"ETHPrivKey":0,_id:0},function (err, result) {
 			if (err) return next(err);
-			res.json(result);
+			return res.status(200).send({
+				status:"success",
+				code:"200",
+				message:"Successful getting user profile",
+				data: result
+			});
 		});
 	} else {
-		return res.status(403).send({success: false, msg: 'Unauthorized.'});
+		return res.status(500).send({
+			status:"error",
+			code:"500",
+			message:"Unauthorized",
+		});
 	}
 };
-
-
 
 // forgot password
 const forgotPassword= async(req, res, next) => {
 	var email =	req.params.email; 
 	try{
 		let result = await services.forgotPassword(email);
-		res.status(200).send({"message": "success", "data" : result});				
+		return res.status(200).send({
+			status:"success",
+			code:"200",
+			message:"Success",
+			data: result
+		});
 	}
 	catch (err) {
-		res.status(500).send({"message": "failure", "data" : err});
+		return res.status(500).send({
+			status:"error",
+			code:"500",
+			message:"Unauthorized",
+			data: err
+		});
 	}
 };
 
@@ -122,14 +209,29 @@ const forgotPasswordSet= async(req, res, next) => {
 	
 	try{
 		let result = await services.setForgotPassword(token, password);
-		res.status(200).send({"message": "success", "data" : result});				
+		return res.status(200).send({
+			status:"success",
+			code:"200",
+			message:"Success",
+			data: result
+		});
 	}
 	catch (err) {
 		if(err == "Password Reset link has been expired"){
-			res.status(403).send({"message": "failure", "data" : err});	
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"failure",
+				data: err
+			});
 		}
 		else{
-		res.status(500).send({"message": "failure", "data" : err});
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"failure",
+				data: err
+			});
 		}
 	}
 };
@@ -144,12 +246,27 @@ const resetPassword= async(req,	res, next) => {
 	if(token){
 		try{
 			let result = await services.setResetPassword(email, oldPassword, password);
-			res.status(200).send({"message": "success", "data" : result});				
+			return res.status(200).send({
+				status:"success",
+				code:"200",
+				message:"Success",
+				data: result
+			});
 		} catch (err) {
-			res.status(500).send({"message": "failure", "data" : err});
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"failure",
+				data: err
+			});
 		}
 	} else {
-		return res.status(403).send({"message": false, msg: 'Unauthorized.'});
+		return res.status(500).send({
+			status:"error",
+			code:"500",
+			message:"failure",
+			data: err
+		});
 	}
 };
 
@@ -169,8 +286,6 @@ function getToken(headers) {
 	}
 };
 
-
-
 module.exports = function(router){
 	
 	router.post('/signup', (req,res,next) => {
@@ -184,6 +299,14 @@ module.exports = function(router){
 		},
 		signin
 	);
+
+	router.post('/saveGoogleData',
+		(req,res,next) => {
+			next();            
+		},
+		loginWithGoogle
+	);
+
 
 	router.post('/updateProfile', passport.authenticate('jwt', { session: false}), (req,res,next) => {
 			next();						
