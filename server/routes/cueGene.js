@@ -110,63 +110,63 @@ const createRandomGene = async(req,res,next) => {
             var multiplier = decryptedGene.substr(46,1);
             if( family == 0){
                 var familyName = "bronze";
-                var tipName = await CueName.find({sequence:tip,family:"bronze"});
-                var shaftName = await CueName.find({sequence:shaft,family:"bronze"})
-                var shaftCollarName = await CueName.find({sequence:shaftCollar,family:"bronze"})
-                var jointName = await CueName.find({sequence:joint,family:"bronze"})
-                var forewrapName = await CueName.find({sequence:forewrap,family:"bronze"})
-                var wrapName = await CueName.find({sequence:wrap,family:"bronze"})
-                var sleeveName = await CueName.find({sequence:sleeve,family:"bronze"})
-                var buttCapName = await CueName.find({sequence:buttCap,family:"bronze"})
-                var bumperName = await CueName.find({sequence:bumper,family:"bronze"})
+                var tipName = await CueName.find({sequence:tip.toLowerCase(),family:"bronze"});
+                var shaftName = await CueName.find({sequence:shaft.toLowerCase(),family:"bronze"})
+                var shaftCollarName = await CueName.find({sequence:shaftCollar.toLowerCase(),family:"bronze"})
+                var jointName = await CueName.find({sequence:joint.toLowerCase(),family:"bronze"})
+                var forewrapName = await CueName.find({sequence:forewrap.toLowerCase(),family:"bronze"})
+                var wrapName = await CueName.find({sequence:wrap.toLowerCase(),family:"bronze"})
+                var sleeveName = await CueName.find({sequence:sleeve.toLowerCase(),family:"bronze"})
+                var buttCapName = await CueName.find({sequence:buttCap.toLowerCase(),family:"bronze"})
+                var bumperName = await CueName.find({sequence:bumper.toLowerCase(),family:"bronze"})
             }
             else if( family == 1){
                 var familyName = "silver";
-                var tipName = await CueName.find({sequence:tip,family:"silver"});
-                var shaftName = await CueName.find({sequence:shaft,family:"silver"})
-                var shaftCollarName = await CueName.find({sequence:shaftCollar,family:"silver"})
-                var jointName = await CueName.find({sequence:joint,family:"silver"})
-                var forewrapName = await CueName.find({sequence:forewrap,family:"silver"})
-                var wrapName = await CueName.find({sequence:wrap,family:"silver"})
-                var sleeveName = await CueName.find({sequence:sleeve,family:"silver"})
-                var buttCapName = await CueName.find({sequence:buttCap,family:"silver"})
-                var bumperName = await CueName.find({sequence:bumper,family:"silver"})
+                var tipName = await CueName.find({sequence:tip.toLowerCase(),family:"silver"});
+                var shaftName = await CueName.find({sequence:shaft.toLowerCase(),family:"silver"})
+                var shaftCollarName = await CueName.find({sequence:shaftCollar.toLowerCase(),family:"silver"})
+                var jointName = await CueName.find({sequence:joint.toLowerCase(),family:"silver"})
+                var forewrapName = await CueName.find({sequence:forewrap.toLowerCase(),family:"silver"})
+                var wrapName = await CueName.find({sequence:wrap.toLowerCase(),family:"silver"})
+                var sleeveName = await CueName.find({sequence:sleeve.toLowerCase(),family:"silver"})
+                var buttCapName = await CueName.find({sequence:buttCap.toLowerCase(),family:"silver"})
+                var bumperName = await CueName.find({sequence:bumper.toLowerCase(),family:"silver"})
             }
             else if( family == 2){
                 var familyName = "gold";
-                var tipName = await CueName.find({sequence:tip,family:"gold"});
-                var shaftName = await CueName.find({sequence:shaft,family:"gold"})
-                var shaftCollarName = await CueName.find({sequence:shaftCollar,family:"gold"})
-                var jointName = await CueName.find({sequence:joint,family:"gold"})
-                var forewrapName = await CueName.find({sequence:forewrap,family:"gold"})
-                var wrapName = await CueName.find({sequence:wrap,family:"gold"})
-                var sleeveName = await CueName.find({sequence:sleeve,family:"gold"})
-                var buttCapName = await CueName.find({sequence:buttCap,family:"gold"})
-                var bumperName = await CueName.find({sequence:bumper,family:"gold"})
+                var tipName = await CueName.find({sequence:tip.toLowerCase(),family:"gold"});
+                var shaftName = await CueName.find({sequence:shaft.toLowerCase(),family:"gold"})
+                var shaftCollarName = await CueName.find({sequence:shaftCollar.toLowerCase(),family:"gold"})
+                var jointName = await CueName.find({sequence:joint.toLowerCase(),family:"gold"})
+                var forewrapName = await CueName.find({sequence:forewrap.toLowerCase(),family:"gold"})
+                var wrapName = await CueName.find({sequence:wrap.toLowerCase(),family:"gold"})
+                var sleeveName = await CueName.find({sequence:sleeve.toLowerCase(),family:"gold"})
+                var buttCapName = await CueName.find({sequence:buttCap.toLowerCase(),family:"gold"})
+                var bumperName = await CueName.find({sequence:bumper.toLowerCase(),family:"gold"})
             }
             else if( family == 3){
                 var familyName = "platinum";
-                var tipName = await CueName.find({sequence:tip,family:"platinum"});
-                var shaftName = await CueName.find({sequence:shaft,family:"platinum"})
-                var shaftCollarName = await CueName.find({sequence:shaftCollar,family:"platinum"})
-                var jointName = await CueName.find({sequence:joint,family:"platinum"})
-                var forewrapName = await CueName.find({sequence:forewrap,family:"platinum"})
-                var wrapName = await CueName.find({sequence:wrap,family:"platinum"})
-                var sleeveName = await CueName.find({sequence:sleeve,family:"platinum"})
-                var buttCapName = await CueName.find({sequence:buttCap,family:"platinum"})
-                var bumperName = await CueName.find({sequence:bumper,family:"platinum"})
+                var tipName = await CueName.find({sequence:tip.toLowerCase(),family:"platinum"});
+                var shaftName = await CueName.find({sequence:shaft.toLowerCase(),family:"platinum"})
+                var shaftCollarName = await CueName.find({sequence:shaftCollar.toLowerCase(),family:"platinum"})
+                var jointName = await CueName.find({sequence:joint.toLowerCase(),family:"platinum"})
+                var forewrapName = await CueName.find({sequence:forewrap.toLowerCase(),family:"platinum"})
+                var wrapName = await CueName.find({sequence:wrap.toLowerCase(),family:"platinum"})
+                var sleeveName = await CueName.find({sequence:sleeve.toLowerCase(),family:"platinum"})
+                var buttCapName = await CueName.find({sequence:buttCap.toLowerCase(),family:"platinum"})
+                var bumperName = await CueName.find({sequence:bumper.toLowerCase(),family:"platinum"})
             }
             else if( family == 4){
                 var familyName = "handcrafted";
-                var tipName = await CueName.find({sequence:tip,family:"handcrafted"});
-                var shaftName = await CueName.find({sequence:shaft,family:"handcrafted"})
-                var shaftCollarName = await CueName.find({sequence:shaftCollar,family:"handcrafted"})
-                var jointName = await CueName.find({sequence:joint,family:"handcrafted"})
-                var forewrapName = await CueName.find({sequence:forewrap,family:"handcrafted"})
-                var wrapName = await CueName.find({sequence:wrap,family:"handcrafted"})
-                var sleeveName = await CueName.find({sequence:sleeve,family:"handcrafted"})
-                var buttCapName = await CueName.find({sequence:buttCap,family:"handcrafted"})
-                var bumperName = await CueName.find({sequence:bumper,family:"handcrafted"})
+                var tipName = await CueName.find({sequence:tip.toLowerCase(),family:"handcrafted"});
+                var shaftName = await CueName.find({sequence:shaft.toLowerCase(),family:"handcrafted"})
+                var shaftCollarName = await CueName.find({sequence:shaftCollar.toLowerCase(),family:"handcrafted"})
+                var jointName = await CueName.find({sequence:joint.toLowerCase(),family:"handcrafted"})
+                var forewrapName = await CueName.find({sequence:forewrap.toLowerCase(),family:"handcrafted"})
+                var wrapName = await CueName.find({sequence:wrap.toLowerCase(),family:"handcrafted"})
+                var sleeveName = await CueName.find({sequence:sleeve.toLowerCase(),family:"handcrafted"})
+                var buttCapName = await CueName.find({sequence:buttCap.toLowerCase(),family:"handcrafted"})
+                var bumperName = await CueName.find({sequence:bumper.toLowerCase(),family:"handcrafted"})
             }
             let cueCount = await Cue.count({});
             let imageUrl = await cueImage(cueId);
