@@ -32,6 +32,7 @@
     "nodemon": "1.17.4",
     "npm": "^6.0.0",
     "osprey": "0.5.0",
+    "passport-2fa-totp": "0.0.1",
     "passport-jwt": "^4.0.0",
     "random-number": "0.0.9",
     "request": "2.86.0",

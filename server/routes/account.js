@@ -9,11 +9,11 @@ var User = require("../models/user");
 var services = require('../services/accountService.js');
 const logger = require('../utils/logger').logger;
 import { getEtherAddress } from '../services/ethereumService';
-// var getEtherAdd = require('./ether');
+
 
 const signup = async(req,res, next) => {
-		
-	if (!req.body.email || !req.body.password) {
+	var email =  req.body.email;
+	if (!email || !req.body.password) {
 		return res.status(500).send({
             status:"error",
             code:"500",
@@ -21,7 +21,7 @@ const signup = async(req,res, next) => {
         });
 	} else {
 		var newUser = new User({
-			email: req.body.email,
+			email: email.toLowerCase(),
 			password: req.body.password,
 			name: req.body.name,
 		});
@@ -35,27 +35,22 @@ const signup = async(req,res, next) => {
 				});
 			}
 			else {
-				var genratingAddress = await getEtherAddress(req.body.email);
 				return res.status(200).send({
 					status:"success",
 					code:"200",
 					message:"Successful created new user",
-					publicKey: genratingAddress
 				});
-			}
-			
+			}	
 		});
 	}
 };
 
 // singin 
-const signin = async(req,	res, next) => {
-	
+const signin = async(req, res, next) => {
 	User.findOne({
 		email: req.body.email
 	}, {"ETHPrivKey":0,_id:0}, function(err, user) {
 		if (err) throw err;
-
 		if (!user) {
 			return res.status(500).send({
 				status:"error",
@@ -63,7 +58,8 @@ const signin = async(req,	res, next) => {
 				message:"Authentication failed. User not found",
 			});
 			
-		} else {
+		}
+		if(user.gmailSignin == false){
 			// check if password matches
 			user.comparePassword(req.body.password, function (err, isMatch) {
 				if (isMatch && !err) {
@@ -84,6 +80,12 @@ const signin = async(req,	res, next) => {
 					});
 				}
 			});
+		}else {
+			return res.status(501).send({
+				status:"loginError",
+				code:"500",
+				message:"Please signIn with Gmail API",
+			});
 		}
 	});
 };
@@ -97,46 +99,84 @@ const loginWithGoogle = async(req,  res, next) => {
 			message:"Please pass your emailID",
 		});
 	} else {
-	  var newUser = new User();
-	  newUser.id = req.body.id;
-	  newUser.token = req.body.idToken;
-	  newUser.name = req.body.name;
-	  newUser.email = req.body.email;
-	  // save the user
-	  newUser.save(function(err) {
-		if (err) {
-			return res.status(500).send({
-				status:"error",
-				code:"500",
-				message:"Email already exists",
-			});
-		} else {
-			User.findOne({"email": req.body.email},{"ETHPrivKey":0,_id:0},function (err, result) {
-				if (err) return next(err);
-				return res.status(200).send({
-					status:"success",
-					code:"200",
-					message:"Successful getting user profile",
-					data: result
+		var newUser = new User();
+		newUser.id = req.body.id;
+		newUser.token = req.body.idToken;
+		newUser.name = req.body.name;
+		newUser.email = req.body.email.toLowerCase();
+		newUser.gmailSignin = true;
+		// save the user
+		newUser.save(async(err)=> {
+			if (err) {
+				return res.status(500).send({
+					status:"error",
+					code:"500",
+					message:"Email already exists",
 				});
-			});
-		}
-		return res.status(200).send({
-			status:"success",
-			code:"200",
-			message:"Successful created new user",
+			} else {
+				var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+				if(result){
+					var token = await jwt.sign(user.toObject(), config.SECRET);
+					return res.status(200).send({
+						status:"success",
+						code:"200",
+						message:"Successful getting user profile",
+						data: result, 
+						token: token 
+					});
+				}
+			}
 		});
-	  });
 	}
 };
+
+// login and signup with Facebook api
+const loginWithFacebook = async(req,  res, next) => {
+	if (!req.body.email) {
+		return res.status(500).send({
+			status:"error",
+			code:"500",
+			message:"Please pass your emailID",
+		});
+	} else {
+		var newUser = new User();
+		newUser.id = req.body.id;
+		newUser.token = req.body.idToken;
+		newUser.name = req.body.name;
+		newUser.email = req.body.email.toLowerCase();
+		newUser.facebookSignin = true;
+		// save the user
+		newUser.save(async(err)=> {
+			if (err) {
+				return res.status(500).send({
+					status:"error",
+					code:"500",
+					message:"Email already exists",
+				});
+			} else {
+				var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+				if(result){
+					var token = await jwt.sign(user.toObject(), config.SECRET);
+					return res.status(200).send({
+						status:"success",
+						code:"200",
+						message:"Successful getting user profile",
+						data: result,
+						token: token
+					});
+				}
+			}
+		});
+	}
+};
+
 // updateUserProfile with email id
 const updateProfile = async(req,res, next) => {
 	
 	var token = getToken(req.headers);
-	
 	if (token) {
 		myquery = {email:req.body.email};
-		myvalues = {$set:{ name: req.body.name, gender: req.body.gender, phoneNo:req.body.phoneNo}};
+		myvalues = {$set:{ name: req.body.name}};
 		var doo = await User.update(myquery,myvalues);
 		return res.status(200).send({
 			status:"success",

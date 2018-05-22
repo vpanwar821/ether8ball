@@ -1,4 +1,4 @@
-
+var GoogleAuthenticator = require('passport-2fa-totp').GoogeAuthenticator;
 var crypto = require("crypto");
 var async = require("async");
 var User = require("../models/user");
@@ -17,11 +17,15 @@ module.exports={
             var buf = await crypto.randomBytes(20);
             token = buf.toString('hex');
             var user = await User.findOne({"email": email});
-
+            if(user.gmailSignin != false){
+                throw "Please login with gmail";
+            }
+            if(user.facebookSignin != false){
+                throw "Please login with facebook api";
+            }
             if(!user){
                 throw "user does not exist";                    
             }else{                  
- 
                 var sendToEmail = user.email;
                 var userName = user.firstName;
                 // let mail = await mail.forgotPasswordLink(sendToEmail,userName, token);

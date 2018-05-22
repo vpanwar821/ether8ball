@@ -71,8 +71,7 @@ function initServer() {
         //     expires: 600000
         // }
       }));
-    
-    
+
       app.use(express.static(__dirname + '/client'));
       var router = osprey.Router();
 

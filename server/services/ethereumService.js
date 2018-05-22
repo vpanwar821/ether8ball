@@ -23,27 +23,6 @@ else{
  }
 
 
- export const getEtherAddress = async(email) => {
-    if(email){
-        logger.info("Ether address generated for user:"+email);
-        let wallet = new ethers.Wallet.createRandom();
-        let password = email + config.SECRET_KEY;
-        let privateKey = encrypt(wallet.privateKey,password);
-        let myquery = {email:email};
-        let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:privateKey}};
-		var result =  await User.update(myquery,myvalue);
-		if(!result){
-		return "ethereumm address not generated"
-		} else {
-		return wallet.address;
-		}
-    }
-    else{
-        logger.error("Error in getting email in getEtheraddress");
-		return "error in getting ethereum address"
-    }
-}
-
 export const createRawTransaction = async(code, keys, to, value, password, gas) => {        
     let gasPrice;
 	if (gas === null || gas === undefined || parseInt(gas) < 50000) {

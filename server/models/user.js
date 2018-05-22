@@ -10,6 +10,9 @@ var UserSchema = new Schema({
     forgotPassswordTokenCreatedAt: { type: Date},
     ETHAddress  : {type: String},
     ETHPrivKey  : {type: String},
+    secret: {type: String}, // google authnticator secret
+    gmailSignin : {type: Boolean, default: false},
+    facebookSignin: {type: Boolean, default: false},
     email: {
         type: String,
         unique: true,
@@ -18,7 +21,6 @@ var UserSchema = new Schema({
     },
     password: {
         type: String,
-        required: true
     },
 });
 

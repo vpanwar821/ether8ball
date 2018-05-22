@@ -1,7 +1,7 @@
 const logger = require('../utils/logger').logger;
 const ethers = require('ethers');
 const config = require('config');
-import {encrypt} from '../helpers/encryption';
+import {encrypt, decrypt} from '../helpers/encryption';
 import rp from 'request-promise';
 import { createRawTransaction, web3} from '../services/ethereumService.js';
 import BigNumber from 'bignumber.js';
@@ -16,6 +16,159 @@ if(config.TESTING === true){
 }
 else{
     start_of_url = config.ETHERSCAN_API_URL_PROD;
+}
+// generating ethereum address with emailID
+const getEtherAddress = async(req, res, next) => {
+    if(req.params.email){
+        logger.info("Ether address generated for user:"+req.params.email);
+        let wallet = new ethers.Wallet.createRandom();
+        let password = req.params.email + config.SECRET_KEY;
+        let privateKey = encrypt(wallet.privateKey,password);
+        let myquery = {email:req.params.email};
+        let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:privateKey}};
+		var result =  await User.update(myquery,myvalue);
+		if(!result){
+            return res.status(500).send({
+                status:"error",
+                code:"500",
+                message:"Ethereum address not generated",
+            });
+		} else {
+            return res.status(200).send({
+                status:"success",
+                code:"200",
+                message:"Successful created wallet address",
+                publicKey: wallet.address
+            });
+		}
+    }
+    else{
+        logger.error("Error in getting email in getEtheraddress");
+		return res.status(500).send({
+            status:"error",
+            code:"500",
+            message:"Ethereum address not generated",
+        });
+    }
+}
+
+const exportPrivKey = async(req, res, next) => {
+
+    var user = await User.findOne({ email: req.body.email.toLowerCase() })
+    if (!user) {
+        return res.status(403).json({
+        "status": "error",
+        code: 403,
+        "message": "User doesnot exists"
+        });
+    } else {
+        
+        const privKey = decrypt(user.ETHPrivKey, req.body.email);
+        res.status(200).send({
+            "status": "success",
+            code:200,
+            "message": "Success",
+            data: privKey.toString()
+        });
+    }
+}
+  
+const importPrivKey = async(req, res, next)=> {
+
+    const email = req.body.email;
+    var wallet = new ethers.Wallet('0x'+req.body.privKey);
+    var checkAddress = false;
+
+    var user  = await User.findOne({ email: email.toLowerCase()})
+    
+    if (!user) {
+        return res.status(403).json({
+        "status": "error",
+        code: 403,
+        "message": "User doesnot exists"
+        });
+    }
+    else {
+        if(user.ETHAddress != undefined){
+            user.ETHAddress.forEach(function(value){
+                if(value === wallet.address){
+                    checkAddress = true;
+                }
+            });
+        }
+        if(checkAddress === false)
+        {
+            let myquery = {email:user.email};
+            let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:encrypt(wallet.privateKey, email)}};
+            var result = await User.update(myquery, myvalue);
+            if(result){
+                return res.status(200).send({
+                    "status": "success",
+                    code:200,
+                    "message":"Wallet imported successfully",
+                    data: wallet.address
+                });
+            } else {
+                res.status(500).send({
+                    "status": "error",
+                    code:500,
+                    message: "Problem in storing existing wallet details",
+                });
+            }
+        }else{
+            res.status(403).send({
+            "status": "error",
+            code:403,
+            message: "Wallet already exist.",
+            });
+        }
+    }
+}
+
+//  import ethereum address from JSON file
+const importThroughUtc = async(req, res, next) => {
+    
+    var json = JSON.stringify(req.body.utcFile);
+    var email = req.body.email;
+    var checkAddress = false;
+
+    var wallet =  await ethers.Wallet.fromEncryptedWallet(json, password);
+        
+    var user =  await User.findOne({ email:email.toLowerCase()});
+    
+    if(user.ETHAddress != undefined){
+        user.ETHAddress.forEach(function(value){
+            if(value === wallet.address) {
+                checkAddress = true;
+            }        
+        });
+    }
+    if(checkAddress === false) {
+        let myquery = {email:user.email};
+        let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:encrypt(wallet.privateKey, email)}};
+        var result = await User.update(myquery, myvalue);
+        if(result){
+            res.status(200).send({
+                "status": "success",
+                code:200,
+                message: "Wallet imported successfully",
+                data: wallet.address
+            });
+        } else {
+            res.status(403).send({
+                "status": "error",
+                code:403,
+                message: "Wallet already exist.",
+                data: wallet.address
+            });
+        }
+    } else {
+        res.status(403).send({
+            "status":"error",
+            code:403,
+            message: "Enter wallet password."
+        });
+    }
 }
 
 const etherTransactionHistory = async(req,res,next) => {
@@ -195,12 +348,33 @@ const transferEther = async(req,res,next) => {
 
 module.exports = function (router) {
 
-    // router.get('/getEtherAddress/{email}',
-    // (req,res,next) => {
-    //     next();
-    //     },
-    //     getEtherAddress
-    // );
+    router.get('/getEtherAddress/{email}',
+        (req,res,next) => {
+            next();
+        },
+        getEtherAddress
+    );
+
+    router.post('/importPrivKey',
+        (req, res, next) => {
+            next();
+        },
+        importPrivKey
+    );
+
+    router.post('/exportPrivKey',
+        (req, res, next) => {
+            next();
+        },
+        exportPrivKey
+    );
+
+    router.post('/importThroughUtc',
+        (req, res, next) => {
+            next();
+        },
+        importThroughUtc
+    );
 
     router.get('/etherTransactionHistory/{address}',
         (req,res,next) => {
