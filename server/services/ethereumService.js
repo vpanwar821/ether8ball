@@ -1,8 +1,12 @@
 /*****************************Node modules ***************************/
+const logger = require('../utils/logger').logger;
 import BigNumber from 'bignumber.js';
 BigNumber.config({ ERRORS: false });
+import {encrypt} from '../helpers/encryption';
+var User = require("../models/user");
 import Web3 from 'web3';
 import EthereumTx from 'ethereumjs-tx';
+const ethers = require('ethers');
 
 /***************************Import local modules **************************/
 import { decrypt } from '../helpers/encryption';
@@ -17,6 +21,28 @@ else{
     //Ethereum mainnet connection
       web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/mROzXUBaQKkqSyXQFXLq'));  
  }
+
+
+ export const getEtherAddress = async(email) => {
+    if(email){
+        logger.info("Ether address generated for user:"+email);
+        let wallet = new ethers.Wallet.createRandom();
+        let password = email + config.SECRET_KEY;
+        let privateKey = encrypt(wallet.privateKey,password);
+        let myquery = {email:email};
+        let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:privateKey}};
+		var result =  await User.update(myquery,myvalue);
+		if(!result){
+		return "ethereumm address not generated"
+		} else {
+		return wallet.address;
+		}
+    }
+    else{
+        logger.error("Error in getting email in getEtheraddress");
+		return "error in getting ethereum address"
+    }
+}
 
 export const createRawTransaction = async(code, keys, to, value, password, gas) => {        
     let gasPrice;

@@ -18,35 +18,6 @@ else{
     start_of_url = config.ETHERSCAN_API_URL_PROD;
 }
 
-const getEtherAddress = async(req,res,async) => {
-    if(req.params.email){
-        logger.info("Ether address generated for user:"+req.params.email);
-        let wallet = new ethers.Wallet.createRandom();
-        let password = req.params.email + config.SECRET_KEY;
-        let privateKey = encrypt(wallet.privateKey,password);
-        let myquery = {email:req.params.email};
-        let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:privateKey}};
-        await User.update(myquery,myvalue);
-
-        return res.status(200).json({
-            "status":"success",
-            "code":200,
-            "messages":"Success",
-            "data":{
-                "publicKey":wallet.address,
-                }
-        });
-    }
-    else{
-        logger.error("Error in getting email in getEtheraddress");
-        return res.status(500).json({
-            "status":"error",
-            "code":500,
-            "message":"Error" 
-        });
-    }
-}
-
 const etherTransactionHistory = async(req,res,next) => {
 
     if (!req.params.address) {
@@ -224,12 +195,12 @@ const transferEther = async(req,res,next) => {
 
 module.exports = function (router) {
 
-    router.get('/getEtherAddress/{email}',
-    (req,res,next) => {
-        next();
-        },
-        getEtherAddress
-    );
+    // router.get('/getEtherAddress/{email}',
+    // (req,res,next) => {
+    //     next();
+    //     },
+    //     getEtherAddress
+    // );
 
     router.get('/etherTransactionHistory/{address}',
         (req,res,next) => {

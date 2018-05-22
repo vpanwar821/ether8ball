@@ -8,6 +8,8 @@ var router = express.Router();
 var User = require("../models/user");
 var services = require('../services/accountService.js');
 const logger = require('../utils/logger').logger;
+import { getEtherAddress } from '../services/ethereumService';
+// var getEtherAdd = require('./ether');
 
 const signup = async(req,res, next) => {
 		
@@ -24,7 +26,7 @@ const signup = async(req,res, next) => {
 			name: req.body.name,
 		});
 		// save the user
-		newUser.save(function(err) {
+		newUser.save(async(err)=> {
 			if (err) {
 				return res.status(500).send({
 					status:"error",
@@ -32,11 +34,16 @@ const signup = async(req,res, next) => {
 					message:"Email already exists",
 				});
 			}
-			return res.status(200).send({
-				status:"success",
-				code:"200",
-				message:"Successful created new user",
-			});
+			else {
+				var genratingAddress = await getEtherAddress(req.body.email);
+				return res.status(200).send({
+					status:"success",
+					code:"200",
+					message:"Successful created new user",
+					publicKey: genratingAddress
+				});
+			}
+			
 		});
 	}
 };
@@ -102,6 +109,16 @@ const loginWithGoogle = async(req,  res, next) => {
 				status:"error",
 				code:"500",
 				message:"Email already exists",
+			});
+		} else {
+			User.findOne({"email": req.body.email},{"ETHPrivKey":0,_id:0},function (err, result) {
+				if (err) return next(err);
+				return res.status(200).send({
+					status:"success",
+					code:"200",
+					message:"Successful getting user profile",
+					data: result
+				});
 			});
 		}
 		return res.status(200).send({
