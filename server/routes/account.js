@@ -127,7 +127,7 @@ const loginWithGoogle = async(req,  res, next) => {
 				} else {
 					var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
 					if(result){
-						var token = await jwt.sign(user.toObject(), config.SECRET);
+						var token = await jwt.sign(result.toObject(), config.SECRET);
 						return res.status(200).send({
 							status:"success",
 							code:"200",
@@ -199,9 +199,9 @@ const updateProfile = async(req,res, next) => {
 	
 	var token = getToken(req.headers);
 	if (token) {
-		myquery = {email:req.body.email};
-		myvalues = {$set:{ name: req.body.name}};
-		var doo = await User.update(myquery,myvalues);
+		var myquery = {email:req.body.email};
+		var myvalues = {$set:{ name: req.body.name}};
+		await User.update(myquery,myvalues);
 		return res.status(200).send({
 			status:"success",
 			code:"200",
@@ -239,7 +239,7 @@ const getUsers= async(req,	res, next) => {
 };
 
 // get User Profile
-const getUserProfile= async(req,	res, next) => {
+const getUserProfile= async(req, res, next) => {
 	var token = getToken(req.headers);
 	if (token) {
 		User.findOne({"email": req.params.email},{"ETHPrivKey":0,_id:0},function (err, result) {
