@@ -99,34 +99,46 @@ const loginWithGoogle = async(req,  res, next) => {
 			message:"Please pass your emailID",
 		});
 	} else {
-		var newUser = new User();
-		newUser.id = req.body.id;
-		newUser.token = req.body.idToken;
-		newUser.name = req.body.name;
-		newUser.email = req.body.email.toLowerCase();
-		newUser.gmailSignin = true;
-		// save the user
-		newUser.save(async(err)=> {
-			if (err) {
-				return res.status(500).send({
-					status:"error",
-					code:"500",
-					message:"Email already exists",
-				});
-			} else {
-				var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
-				if(result){
-					var token = await jwt.sign(user.toObject(), config.SECRET);
-					return res.status(200).send({
-						status:"success",
-						code:"200",
-						message:"Successful getting user profile",
-						data: result, 
-						token: token 
+		var getUser = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+		if(getUser){
+			var token = await jwt.sign(getUser.toObject(), config.SECRET);
+			return res.status(200).send({
+				status:"success",
+				code:"200",
+				message:"Successful getting user profile",
+				data: getUser, 
+				token: token 
+			});
+		} else {
+			var newUser = new User();
+			newUser.id = req.body.id;
+			newUser.token = req.body.idToken;
+			newUser.name = req.body.name;
+			newUser.email = req.body.email.toLowerCase();
+			newUser.gmailSignin = true;
+			// save the user
+			newUser.save(async(err)=> {
+				if (err) {
+					return res.status(500).send({
+						status:"error",
+						code:"500",
+						message:"Error in saving user profile",
 					});
+				} else {
+					var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+					if(result){
+						var token = await jwt.sign(user.toObject(), config.SECRET);
+						return res.status(200).send({
+							status:"success",
+							code:"200",
+							message:"Successful getting user profile",
+							data: result, 
+							token: token 
+						});
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 };
 
@@ -136,37 +148,49 @@ const loginWithFacebook = async(req,  res, next) => {
 		return res.status(500).send({
 			status:"error",
 			code:"500",
-			message:"Please pass your emailID",
+			message:"Please pass your facebookID",
 		});
 	} else {
-		var newUser = new User();
-		newUser.id = req.body.id;
-		newUser.token = req.body.idToken;
-		newUser.name = req.body.name;
-		newUser.email = req.body.email.toLowerCase();
-		newUser.facebookSignin = true;
-		// save the user
-		newUser.save(async(err)=> {
-			if (err) {
-				return res.status(500).send({
-					status:"error",
-					code:"500",
-					message:"Email already exists",
-				});
-			} else {
-				var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
-				if(result){
-					var token = await jwt.sign(user.toObject(), config.SECRET);
-					return res.status(200).send({
-						status:"success",
-						code:"200",
-						message:"Successful getting user profile",
-						data: result,
-						token: token
+		var getUser = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+		if(getUser){
+			var token = await jwt.sign(getUser.toObject(), config.SECRET);
+			return res.status(200).send({
+				status:"success",
+				code:"200",
+				message:"Successful getting user profile",
+				data: getUser, 
+				token: token 
+			});
+		} else {
+			var newUser = new User();
+			newUser.id = req.body.id;
+			newUser.token = req.body.idToken;
+			newUser.name = req.body.name;
+			newUser.email = req.body.email.toLowerCase();
+			newUser.facebookSignin = true;
+			// save the user
+			newUser.save(async(err)=> {
+				if (err) {
+					return res.status(500).send({
+						status:"error",
+						code:"500",
+						message:"Error in storing user details",
 					});
+				} else {
+					var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+					if(result){
+						var token = await jwt.sign(user.toObject(), config.SECRET);
+						return res.status(200).send({
+							status:"success",
+							code:"200",
+							message:"Successful getting user profile",
+							data: result, 
+							token: token 
+						});
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 };
 
@@ -345,23 +369,34 @@ function getToken(headers) {
 
 module.exports = function(router){
 	
+	// local signup
 	router.post('/signup', (req,res,next) => {
 			next();						
 		},
 		signup
 	);
 
+	// local login
 	router.post('/signin', (req,res,next) => {
 			next();						
 		},
 		signin
 	);
 
+	// gmail login
 	router.post('/saveGoogleData',
 		(req,res,next) => {
 			next();            
 		},
 		loginWithGoogle
+	);
+
+	// facebook login 
+	router.post('/saveFacebookData',
+		(req,res,next) => {
+			next();            
+		},
+		loginWithFacebook
 	);
 
 
