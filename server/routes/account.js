@@ -112,7 +112,6 @@ const loginWithGoogle = async(req,  res, next) => {
 		} else {
 			var newUser = new User();
 			newUser.id = req.body.id;
-			newUser.token = req.body.idToken;
 			newUser.name = req.body.name;
 			newUser.email = req.body.email.toLowerCase();
 			newUser.gmailSignin = true;
@@ -164,7 +163,6 @@ const loginWithFacebook = async(req,  res, next) => {
 		} else {
 			var newUser = new User();
 			newUser.id = req.body.id;
-			newUser.token = req.body.idToken;
 			newUser.name = req.body.name;
 			newUser.email = req.body.email.toLowerCase();
 			newUser.facebookSignin = true;

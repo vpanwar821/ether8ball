@@ -4,7 +4,6 @@ var bcrypt = require('bcrypt-nodejs');
 
 var UserSchema = new Schema({
     id: {type: String },
-	token: {type: String} ,
     name: { type: String },
     forgotPassswordToken: { type: String},
     forgotPassswordTokenCreatedAt: { type: Date},
