@@ -44,8 +44,8 @@ const createRandomGene = async(req,res,next) => {
             contractAddress = config.CUE_CONTRACT_ADDRESS_PROD;
         }
         logger.info("Generation of random gene");
-        var result = gene.cueRandomGene();
-        // var result = "1008703d8d6796f51ffc446e6cf3d09064ab10fa9b83281038084bcb892d4414ffc86afe7374221b8b9252e2e384df64585fe172cc";
+        // var result = gene.cueRandomGene();
+        var result = "1008703d8d6796f51ffc446e6cf3d09064ab10fa9b83281038084bcb892d4414ffc86afe7374221b8b9252e2e384df64585fe172cc";
         const keys = {pubkey:config.COO_PUBLIC_KEY,privkey:config.COO_PRIVATE_KEY};
         console.log(keys);
         const generateCue = await generateCueId(result);
@@ -85,6 +85,7 @@ const createRandomGene = async(req,res,next) => {
             });
 
             let decryptedGene = decrypt(result,config.password);
+            console.log("decrypted",decryptedGene);
             var generation = decryptedGene.substr(0,1);
             var family = decryptedGene.substr(1,1);
             var tip = decryptedGene.substr(2,3);
@@ -332,4 +333,5 @@ module.exports = function(router){
         },
         encryption
     );
+
 }

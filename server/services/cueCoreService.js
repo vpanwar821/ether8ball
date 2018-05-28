@@ -58,25 +58,6 @@ const contractAbi = [
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_genes",
-				"type": "string"
-			}
-		],
-		"name": "createGen0Cue",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
 				"name": "_cueId",
 				"type": "uint256"
 			},
@@ -296,6 +277,15 @@ const contractAbi = [
 		"type": "function"
 	},
 	{
+		"constant": false,
+		"inputs": [],
+		"name": "withdrawBalance",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -375,15 +365,6 @@ const contractAbi = [
 		],
 		"name": "Transfer",
 		"type": "event"
-	},
-	{
-		"constant": false,
-		"inputs": [],
-		"name": "withdrawBalance",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"inputs": [],
@@ -879,7 +860,8 @@ const Contract = new web3.eth.Contract(contractAbi, contractAddress);
 
 export const generateCueId = async(gene) => {
 	try{
-		let result = Contract.methods.createGen0Cue(gene).encodeABI();
+		console.log("gene",gene);
+		let result = Contract.methods.createGen0Auction(gene).encodeABI();
 		return result;
 	}
 	catch(err){
