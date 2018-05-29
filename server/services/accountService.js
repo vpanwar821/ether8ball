@@ -9,6 +9,75 @@ var mail = require('./email');
 
 module.exports={
 
+
+    verifyOtp: async(email,otp) => {
+        let result = {};
+        
+        try{
+            let user = await User.findOne({"email":email});
+        
+            if(!user){
+                throw "user doesnot exist";
+            }
+            else{
+                if(user.emailOTP == otp){
+                    var currentDate = moment(new Date());
+                    var otpDate = moment(user.emailOtpCreatedAt);
+                    var newDiff = currentDate.diff(otpDate,'seconds');
+                    if(newDiff > 600)
+                    {
+                        logger.error("Otp has been expired");
+                        throw "Otp has been expired";
+                    }
+                    else{
+                        let myquery = {email:user.email};
+                        let myvalues = {$set:{isAuthenticated:true}};
+                        await User.update(myquery,myvalues);
+                        await mail.welcomeMail(user.email);
+                        result.email = user.email;
+                        result.message = "Otp is correct";
+                        return result;
+                    } 
+                }
+                else{
+                    logger.error("invalid otp");
+                    throw "invalid Otp";
+                }
+            }
+        }catch(err){
+            logger.error("error in searching in database:"+err);
+            throw err;
+        }
+    },
+
+
+    resetOtp: async(email) => {
+        let result = {};
+        let OTPCode;
+        let myquery;
+        let myvalues;
+        try{
+            let user = await User.findOne({"email":email});
+            if(!user){
+                throw "user doesnot exist";
+            }
+            else{
+                    
+                OTPCode = getRandom(100000, 999999);
+                myquery = {email:user.email};
+                myvalues = {$set:{emailOTP:OTPCode,emailOtpCreatedAt:Date.now()}};
+                await User.update(myquery,myvalues);
+                await mail.welcomeMail(user.email, OTPCode);        
+                result.message = "OTP sent successfully";
+                return result;
+        
+            }
+        }catch(err){
+            logger.error("error in searching in database:"+err);
+            throw err;
+        }
+    },
+
     forgotPassword: async(email) => {							
         var token;
         var result = {};
@@ -129,6 +198,13 @@ module.exports={
         }
     },
 }
+
+const getRandom = function (min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+}
+
 
 const comparePassword = (password, user) => {
     return bcrypt.compareSync(password, user.password);

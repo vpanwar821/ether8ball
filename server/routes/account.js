@@ -8,39 +8,66 @@ var router = express.Router();
 var User = require("../models/user");
 var services = require('../services/accountService.js');
 const logger = require('../utils/logger').logger;
+var mail = require('../services/email.js');
 import { getEtherAddress } from '../services/ethereumService';
 
+const getRandom = function (min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+}
 
 const signup = async(req,res, next) => {
-	var email =  req.body.email;
-	if (!email || !req.body.password) {
+	try {
+		var email =  req.body.email;
+		if (!email || !req.body.password) {
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"Failure",
+			});
+		} else {
+			var OTPCode = await getRandom(100000, 999999);
+
+			var newUser = new User({
+				email: email.toLowerCase(),
+				password: req.body.password,
+				name: req.body.name,
+				emailOTP  : OTPCode,    
+                emailOtpCreatedAt : Date.now(),
+			});
+			// save the user
+			newUser.save(async(err)=> {
+				if (err) {
+					return res.status(500).send({
+						status:"error",
+						code:"500",
+						message:"Email already exists",
+					});
+				}
+				else {
+					var mailSending = await mail.welcomeMail(email, OTPCode);
+					if(mailSending) {
+						return res.status(200).send({
+							status:"success",
+							code:"200",
+							message:"Successful created new user",
+						});
+					} else {
+						return res.status(500).send({
+							status:"error",
+							code:"500",
+							message:"Soory error in sending welcome mail",
+						});
+					}
+				}	
+			});
+		}
+	} catch (err) {
 		return res.status(500).send({
-            status:"error",
-            code:"500",
-            message:"Failure",
-        });
-	} else {
-		var newUser = new User({
-			email: email.toLowerCase(),
-			password: req.body.password,
-			name: req.body.name,
-		});
-		// save the user
-		newUser.save(async(err)=> {
-			if (err) {
-				return res.status(500).send({
-					status:"error",
-					code:"500",
-					message:"Email already exists",
-				});
-			}
-			else {
-				return res.status(200).send({
-					status:"success",
-					code:"200",
-					message:"Successful created new user",
-				});
-			}	
+			status:"error",
+			code:"500",
+			message:"Soory error in signup",
 		});
 	}
 };
@@ -191,6 +218,48 @@ const loginWithFacebook = async(req,  res, next) => {
 		}
 	}
 };
+
+const verifyEmailOtp = async (req,res,next) => {
+    let email = req.body.email;
+    let otp = req.body.otp;
+    try{
+		let result = await services.verifyOtp(email,otp);
+		logger.info({"message": "success","data": result});
+		return res.status(200).send({
+			status:"success",
+			code:"200",
+			message:"Successfully email OTP verified",
+			data: result
+		});	
+    }
+    catch(err){
+      	logger.error(err);
+      	res.status(500).send({"message":"failure", "data":err});
+    }
+}
+
+const resetEmailOtp = async (req,res,next) => {
+	let email = req.body.email;
+	try{
+	  	let result = await services.resetOtp(email);
+	  	logger.info({"message": "success","data": result});
+	  	return res.status(200).send({
+			status:"success",
+			code:"200",
+			message:"Successfully resend email OTP",
+		});	
+	}
+	catch(err){
+		  logger.error(err);
+		  return res.status(500).send({
+			status:"error",
+			code:"500",
+			message:"error in resend OTP",
+			data: err,
+		});
+	}
+}
+
 
 // updateUserProfile with email id
 const updateProfile = async(req,res, next) => {
@@ -397,7 +466,20 @@ module.exports = function(router){
 		loginWithFacebook
 	);
 
+	router.post('/verifyEmailOtp',
+		(req,res,next) => {
+        	next();
+      	},
+      	verifyEmailOtp
+    );
 
+    router.post('/resetEmailOtp',
+    	(req,res,next) => {
+        	next();
+      	},
+      	resetEmailOtp
+    );
+	
 	router.post('/updateProfile', passport.authenticate('jwt', { session: false}), (req,res,next) => {
 			next();						
 		},

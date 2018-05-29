@@ -12,6 +12,9 @@ var UserSchema = new Schema({
     secret: {type: String}, // google authnticator secret
     gmailSignin : {type: Boolean, default: false},
     facebookSignin: {type: Boolean, default: false},
+    emailOTP: {type: Number},
+    emailOtpCreatedAt: {type: Date},
+    isAuthenticated: {type: Boolean, default: false},
     email: {
         type: String,
         unique: true,
