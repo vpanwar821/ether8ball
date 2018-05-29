@@ -11,9 +11,10 @@ import { getGene } from './cueCoreService';
 var cueFamily = new Enum(['Bronze','Silver','Gold','Platinum','Handcrafted']);
 
 export var cueImage =  async(cueId) => {
-    var gene = await getGene(cueId);
+    var result = await getGene(cueId);
+    console.log("result.genes",result.genes);
     return new Promise((resolve,reject) => {
-        var decryptedGene = decrypt(gene,config.password);
+        var decryptedGene = decrypt(result.genes,config.password);
         var generationGene = decryptedGene.substr(0,1);
         var familyGene = decryptedGene.substr(1,1);
         var tipGene = decryptedGene.substr(3,2);

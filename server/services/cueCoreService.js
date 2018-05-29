@@ -872,11 +872,22 @@ export const generateCueId = async(gene) => {
 export const getGene = async(cueId) => {
 	try{
 		let result  = await Contract.methods.getCue(cueId).call();
-		return result.genes;
+		return result;
 	}
 	catch(err){
 		logger.error("Error in getGene method",err);
 	}
 } 
+
+export const getCueAddressList = async(userAddr) => {
+	try{
+		let cueList = await Contract.methods.tokensOfOwner(userAddr).call();
+		console.log("list",cueList);
+		return cueList;
+	}
+	catch(err){
+		logger.error("error in getting cue list of an address",err);
+	}
+}
 
 

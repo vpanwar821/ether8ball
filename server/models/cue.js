@@ -16,7 +16,10 @@ var CueSchema = new Schema({
     sleeve : {type:String},
     buttcap : {type:String},
     bumper : {type:String},
-    imageUrl:{type:String}
+    imageUrl:{type:String},
+    firstParentId : {type:Number},
+    secondParentId : {type:Number},
+    thirdParendId:{type:Number}
 });
 
 
