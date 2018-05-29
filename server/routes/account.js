@@ -133,8 +133,8 @@ const loginWithGoogle = async(req,  res, next) => {
 				status:"success",
 				code:"200",
 				message:"Successful getting user profile",
-				data: getUser, 
-				token: token 
+				token: 'JWT ' + token,
+				
 			});
 		} else {
 			var newUser = new User();
@@ -158,8 +158,7 @@ const loginWithGoogle = async(req,  res, next) => {
 							status:"success",
 							code:"200",
 							message:"Successful getting user profile",
-							data: result, 
-							token: token 
+							token: 'JWT ' + token,
 						});
 					}
 				}
@@ -184,8 +183,7 @@ const loginWithFacebook = async(req,  res, next) => {
 				status:"success",
 				code:"200",
 				message:"Successful getting user profile",
-				data: getUser, 
-				token: token 
+				token: 'JWT ' + token,
 			});
 		} else {
 			var newUser = new User();
@@ -209,8 +207,7 @@ const loginWithFacebook = async(req,  res, next) => {
 							status:"success",
 							code:"200",
 							message:"Successful getting user profile",
-							data: result, 
-							token: token 
+							token: 'JWT ' + token,
 						});
 					}
 				}
