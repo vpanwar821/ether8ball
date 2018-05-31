@@ -15,6 +15,7 @@ var UserSchema = new Schema({
     emailOTP: {type: Number},
     emailOtpCreatedAt: {type: Date},
     isAuthenticated: {type: Boolean, default: false},
+    addressGenerated: {type: Boolean, default: false},
     email: {
         type: String,
         unique: true,

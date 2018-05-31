@@ -25,7 +25,7 @@ const getEtherAddress = async(req, res, next) => {
         let password = req.params.email + config.SECRET_KEY;
         let privateKey = encrypt(wallet.privateKey,password);
         let myquery = {email:req.params.email};
-        let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:privateKey}};
+        let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:privateKey, addressGenerated: true}};
 		var result =  await User.update(myquery,myvalue);
 		if(!result){
             return res.status(500).send({
@@ -99,7 +99,7 @@ const importPrivKey = async(req, res, next)=> {
         if(checkAddress === false)
         {
             let myquery = {email:user.email};
-            let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:encrypt(wallet.privateKey, email)}};
+            let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, email)}};
             var result = await User.update(myquery, myvalue);
             if(result){
                 return res.status(200).send({
@@ -145,7 +145,7 @@ const importThroughUtc = async(req, res, next) => {
     }
     if(checkAddress === false) {
         let myquery = {email:user.email};
-        let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:encrypt(wallet.privateKey, email)}};
+        let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, email)}};
         var result = await User.update(myquery, myvalue);
         if(result){
             res.status(200).send({
