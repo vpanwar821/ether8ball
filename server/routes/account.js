@@ -9,6 +9,7 @@ var User = require("../models/user");
 var services = require('../services/accountService.js');
 const logger = require('../utils/logger').logger;
 var mail = require('../services/email.js');
+var crypto = require('crypto');
 import { getEtherAddress } from '../services/ethereumService';
 
 const getRandom = function (min, max) {
@@ -27,14 +28,17 @@ const signup = async(req,res, next) => {
 				message:"Failure",
 			});
 		} else {
-			var OTPCode = await getRandom(100000, 999999);
+			// var OTPCode = await getRandom(100000, 999999);
+			
+			var buf = await crypto.randomBytes(20);
+			var token = await buf.toString('hex');
 
 			var newUser = new User({
 				email: email.toLowerCase(),
 				password: req.body.password,
 				name: req.body.name,
-				emailOTP  : OTPCode,    
-                emailOtpCreatedAt : Date.now(),
+				emailVerifyToken  : token,    
+                tokenCreatedAt : Date.now(),
 			});
 			// save the user
 			newUser.save(async(err)=> {
@@ -46,7 +50,8 @@ const signup = async(req,res, next) => {
 					});
 				}
 				else {
-					var mailSending = await mail.welcomeMail(email, OTPCode);
+					var mailSending = await mail.welcomeMail(email, token);
+					
 					if(mailSending) {
 						return res.status(200).send({
 							status:"success",
@@ -57,7 +62,7 @@ const signup = async(req,res, next) => {
 						return res.status(500).send({
 							status:"error",
 							code:"500",
-							message:"Soory error in sending welcome mail",
+							message:"Sorry error in sending welcome mail",
 						});
 					}
 				}	
@@ -216,11 +221,10 @@ const loginWithFacebook = async(req,  res, next) => {
 	}
 };
 
-const verifyEmailOtp = async (req,res,next) => {
-    let email = req.body.email;
-    let otp = req.body.otp;
+const verifyEmail = async (req,res,next) => {
+    let token = req.params.token;
     try{
-		let result = await services.verifyOtp(email,otp);
+		let result = await services.verifytoken(token);
 		logger.info({"message": "success","data": result});
 		return res.status(200).send({
 			status:"success",
@@ -234,29 +238,6 @@ const verifyEmailOtp = async (req,res,next) => {
       	res.status(500).send({"message":"failure", "data":err});
     }
 }
-
-const resetEmailOtp = async (req,res,next) => {
-	let email = req.body.email;
-	try{
-	  	let result = await services.resetOtp(email);
-	  	logger.info({"message": "success","data": result});
-	  	return res.status(200).send({
-			status:"success",
-			code:"200",
-			message:"Successfully resend email OTP",
-		});	
-	}
-	catch(err){
-		  logger.error(err);
-		  return res.status(500).send({
-			status:"error",
-			code:"500",
-			message:"error in resend OTP",
-			data: err,
-		});
-	}
-}
-
 
 // updateUserProfile with email id
 const updateProfile = async(req,res, next) => {
@@ -463,20 +444,13 @@ module.exports = function(router){
 		loginWithFacebook
 	);
 
-	router.post('/verifyEmailOtp',
+	router.get('/verifyEmail/{token}',
 		(req,res,next) => {
         	next();
       	},
-      	verifyEmailOtp
+      	verifyEmail
     );
 
-    router.post('/resetEmailOtp',
-    	(req,res,next) => {
-        	next();
-      	},
-      	resetEmailOtp
-    );
-	
 	router.post('/updateProfile', passport.authenticate('jwt', { session: false}), (req,res,next) => {
 			next();						
 		},

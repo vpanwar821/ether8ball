@@ -10,32 +10,32 @@ var mail = require('./email');
 module.exports={
 
 
-    verifyOtp: async(email,otp) => {
+    verifytoken: async(token) => {
         let result = {};
-        
+
         try{
-            let user = await User.findOne({"email":email});
+            let user = await User.findOne({"emailVerifyToken":token});
         
             if(!user){
                 throw "user doesnot exist";
             }
             else{
-                if(user.emailOTP == otp){
+                if(user.emailVerifyToken == token){
                     var currentDate = moment(new Date());
-                    var otpDate = moment(user.emailOtpCreatedAt);
+                    var otpDate = moment(user.tokenCreatedAt);
                     var newDiff = currentDate.diff(otpDate,'seconds');
                     if(newDiff > 600)
                     {
                         logger.error("Otp has been expired");
-                        throw "Otp has been expired";
+                        throw "token has been expired";
                     }
                     else{
                         let myquery = {email:user.email};
-                        let myvalues = {$set:{isAuthenticated:true}};
+                        let myvalues = {$set:{isVerified:true}};
                         await User.update(myquery,myvalues);
                         await mail.welcomeMail(user.email);
                         result.email = user.email;
-                        result.message = "Otp is correct";
+                        result.message = "token is correct";
                         return result;
                     } 
                 }
