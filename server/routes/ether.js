@@ -62,8 +62,8 @@ const exportPrivKey = async(req, res, next) => {
         "message": "User doesnot exists"
         });
     } else {
-        
-        const privKey = decrypt(user.ETHPrivKey, req.body.email);
+        let password = req.body.email + config.SECRET_KEY;
+        const privKey = decrypt(user.ETHPrivKey, password);
         res.status(200).send({
             "status": "success",
             code:200,
