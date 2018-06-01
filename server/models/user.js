@@ -14,7 +14,6 @@ var UserSchema = new Schema({
     facebookSignin: {type: Boolean, default: false},
     emailVerifyToken: {type: String},
     tokenCreatedAt: {type: Date},
-    isAuthenticated: {type: Boolean, default: false},
     isVerified: {type: Boolean, default: false},
     addressGenerated: {type: Boolean, default: false},
     email: {
