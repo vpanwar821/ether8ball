@@ -9,6 +9,7 @@ const logger = require('./server/utils/logger').logger;
 process.env["NODE_CONFIG_DIR"] = __dirname + "/server/config/";
 let config = require('config').get('development');
 let sessionSecret = require('config').get('SECRET_SESSION');
+import cors from 'cors';
 
 var ramlFile = config.ramlPath; // RAML file path
 
@@ -56,7 +57,7 @@ function initServer() {
 
       //Instantiate the app.
       const app = express();
-
+      app.use(cors());
       app.use(bodyParser.json());
       app.use(bodyParser.urlencoded({
         extended: true
