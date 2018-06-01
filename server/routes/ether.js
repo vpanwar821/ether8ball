@@ -61,6 +61,12 @@ const exportPrivKey = async(req, res, next) => {
         code: 403,
         "message": "User doesnot exists"
         });
+    }else if (!user.ETHAddress) {
+        return res.status(403).json({
+        "status": "error",
+        code: 403,
+        "message": "Please generate your address"
+        });
     } else {
         let password = req.body.email + config.SECRET_KEY;
         const privKey = decrypt(user.ETHPrivKey, password);
@@ -74,101 +80,113 @@ const exportPrivKey = async(req, res, next) => {
 }
   
 const importPrivKey = async(req, res, next)=> {
-
-    const email = req.body.email;
-    var wallet = new ethers.Wallet('0x'+req.body.privKey);
-    var checkAddress = false;
-
-    var user  = await User.findOne({ email: email.toLowerCase()})
     
-    if (!user) {
-        return res.status(403).json({
-        "status": "error",
-        code: 403,
-        "message": "User doesnot exists"
-        });
-    }
-    else {
-        if(user.ETHAddress != undefined){
-            user.ETHAddress.forEach(function(value){
-                if(value === wallet.address){
-                    checkAddress = true;
-                }
+    const email = req.body.email;
+    var wallet;
+    try {
+         wallet = new ethers.Wallet('0x'+req.body.privKey);
+         var checkAddress = false;
+
+        var user  = await User.findOne({ email: email.toLowerCase()})
+        
+        if (!user) {
+            return res.status(403).json({
+            "status": "error",
+            code: 403,
+            "message": "User doesnot exists"
             });
         }
-        if(checkAddress === false)
-        {
-            let myquery = {email:user.email};
-            let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, email)}};
-            var result = await User.update(myquery, myvalue);
-            if(result){
-                return res.status(200).send({
-                    "status": "success",
-                    code:200,
-                    "message":"Wallet imported successfully",
-                    data: wallet.address
-                });
-            } else {
-                res.status(500).send({
-                    "status": "error",
-                    code:500,
-                    message: "Problem in storing existing wallet details",
+        else {
+            if(wallet.address)
+            {
+                let myquery = {email:user.email};
+                let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, email)}};
+                var result = await User.update(myquery, myvalue);
+                if(result){
+                    return res.status(200).send({
+                        "status": "success",
+                        code:200,
+                        "message":"Wallet imported successfully",
+                        data: wallet.address
+                    });
+                } else {
+                    res.status(500).send({
+                        "status": "error",
+                        code:500,
+                        message: "Problem in storing existing wallet details",
+                    });
+                }
+            }else{
+                res.status(403).send({
+                "status": "error",
+                code:403,
+                message: "Please enter valid key",
                 });
             }
-        }else{
-            res.status(403).send({
+        }
+    } catch(err) {
+        res.status(403).send({
             "status": "error",
             code:403,
-            message: "Wallet already exist.",
-            });
-        }
+            message: "Please enter valid key",
+        });
     }
+    
 }
 
 //  import ethereum address from JSON file
 const importThroughUtc = async(req, res, next) => {
     
-    var json = JSON.stringify(req.body.utcFile);
-    var email = req.body.email;
-    var checkAddress = false;
+    try {
+        var json = JSON.stringify(req.body.utcFile);
+        var email = req.body.email;
+        var checkAddress = false;
 
-    var wallet =  await ethers.Wallet.fromEncryptedWallet(json, password);
+        var wallet =  await ethers.Wallet.fromEncryptedWallet(json, password);
+            
+        var user =  await User.findOne({ email:email.toLowerCase()});
         
-    var user =  await User.findOne({ email:email.toLowerCase()});
-    
-    if(user.ETHAddress != undefined){
-        user.ETHAddress.forEach(function(value){
-            if(value === wallet.address) {
-                checkAddress = true;
-            }        
-        });
-    }
-    if(checkAddress === false) {
-        let myquery = {email:user.email};
-        let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, email)}};
-        var result = await User.update(myquery, myvalue);
-        if(result){
-            res.status(200).send({
-                "status": "success",
-                code:200,
-                message: "Wallet imported successfully",
-                data: wallet.address
-            });
-        } else {
-            res.status(403).send({
-                "status": "error",
-                code:403,
-                message: "Wallet already exist.",
-                data: wallet.address
+        if(user.ETHAddress != undefined){
+            user.ETHAddress.forEach(function(value){
+                if(value === wallet.address) {
+                    checkAddress = true;
+                }        
             });
         }
-    } else {
+        if(checkAddress === false) {
+            let myquery = {email:user.email};
+            let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, email)}};
+            var result = await User.update(myquery, myvalue);
+            if(result){
+                res.status(200).send({
+                    "status": "success",
+                    code:200,
+                    message: "Wallet imported successfully",
+                    data: wallet.address
+                });
+            } else {
+                res.status(403).send({
+                    "status": "error",
+                    code:403,
+                    message: "Wallet already exist.",
+                    data: wallet.address
+                });
+            }
+        } else {
+            res.status(403).send({
+                "status":"error",
+                code:403,
+                message: "Upload valid file."
+            });
+        }
+    } catch (err) {
         res.status(403).send({
             "status":"error",
             code:403,
-            message: "Enter wallet password."
+            message: "Upload valid file."
         });
     }
+    
 }
 
 const etherTransactionHistory = async(req,res,next) => {
