@@ -140,50 +140,35 @@ const importThroughUtc = async(req, res, next) => {
     try {
         var json = JSON.stringify(req.body.utcFile);
         var email = req.body.email;
-        var checkAddress = false;
-
+        var password = req.body.password;
         var wallet =  await ethers.Wallet.fromEncryptedWallet(json, password);
-            
         var user =  await User.findOne({ email:email.toLowerCase()});
         
-        if(user.ETHAddress != undefined){
-            user.ETHAddress.forEach(function(value){
-                if(value === wallet.address) {
-                    checkAddress = true;
-                }        
-            });
-        }
-        if(checkAddress === false) {
+        if(user.addressGenerated === false) {
             let myquery = {email:user.email};
             let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, email)}};
             var result = await User.update(myquery, myvalue);
-            if(result){
-                res.status(200).send({
+            logger.info("Address generated successfully through json for user.",email);
+            return res.status(200).send({
                     "status": "success",
                     code:200,
-                    message: "Wallet imported successfully",
+                    message: "Address generated successfully.",
                     data: wallet.address
                 });
-            } else {
-                res.status(403).send({
-                    "status": "error",
-                    code:403,
-                    message: "Wallet already exist.",
-                    data: wallet.address
-                });
-            }
         } else {
-            res.status(403).send({
+            logger.error("Address already exist through json for user.",email);
+           return res.status(403).send({
                 "status":"error",
                 code:403,
-                message: "Upload valid file."
+                message: "Address already generated."
             });
         }
     } catch (err) {
-        res.status(403).send({
+        logger.error("Error in generating address through json file.",err);
+        return res.status(500).send({
             "status":"error",
             code:403,
-            message: "Upload valid file."
+            message: "Error in generating address through json file."
         });
     }
     
