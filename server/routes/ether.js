@@ -315,12 +315,7 @@ const getEtherBalance = async(req, res, next) => {
   
  
 const transferEther = async(req,res,next) => {
-    var coin = 'ETH';
     let rawTx;
-    var rawTxComm;
-    let myquery;
-    let myvalue;
-    let centralEtherAddress;
     var password = req.body.email + config.SECRET_KEY;
     var etherAmount = (req.body.value)- 0.000861;
    
@@ -328,9 +323,21 @@ const transferEther = async(req,res,next) => {
     
     try{
         let user = await User.findOne({"email":req.body.email});
-        const keys = { pubkey: user.ETHAddress, privkey: user.ETHPrivKey };
-        rawTx = await createRawTransaction('', keys, req.body.ethereumAddress, (new BigNumber(etherAmount).times(new BigNumber(10).pow(18))).toNumber(), password, req.body.gas);
-        logger.info("Raw transaction generated successfully");
+        let passwordCompare = await bcrypt.compareSync(req.body.walletPassword, user.password);
+        if(passwordCompare){
+            const keys = { pubkey: user.ETHAddress, privkey: user.ETHPrivKey };
+            rawTx = await createRawTransaction('', keys, req.body.ethereumAddress, (new BigNumber(etherAmount).times(new BigNumber(10).pow(18))).toNumber(), password, req.body.gas);
+            logger.info("Raw transaction generated successfully");
+        }
+        else{
+            logger.error("Error in exporting private key because password is incorrect");
+            return res.status(403).json({
+                "status": "error",
+                code: 403,
+                "message": "Incorrect Password"
+            });
+        }
+       
     }
     catch(e){
         logger.error("error in creating the transaction for transfer ether:",e);
@@ -345,7 +352,6 @@ const transferEther = async(req,res,next) => {
         web3.eth.sendSignedTransaction('0x' + rawTx.toString('hex'))
         .on('receipt', async (receipt) =>{
             logger.info("Ether transferred successfully");
-            // let mail = await completeTxMail(user.email,coin);
             return res.status(200).send({
                 "status":"success",
                 "code":200,
@@ -354,7 +360,6 @@ const transferEther = async(req,res,next) => {
         })
         .on('error',async (error) => {
             logger.error("error in transferring ether:",error);
-            // await cancelTxMail(req.body.email, coin);
             return res.status(500).json({
                 "status": "Failure",
                 "code": 500,
@@ -365,7 +370,6 @@ const transferEther = async(req,res,next) => {
     }
     catch(e) {
       logger.error("error in transferring ether:",e);
-    //   await cancelTxMail(req.body.email, coin);
       return res.status(500).json({
         "status": "Failure",
         "code": 500,
