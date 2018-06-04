@@ -1,6 +1,7 @@
 const logger = require('../utils/logger').logger;
 const ethers = require('ethers');
 const config = require('config');
+var bcrypt = require('bcrypt-nodejs');
 import {encrypt, decrypt} from '../helpers/encryption';
 import rp from 'request-promise';
 import { createRawTransaction, web3} from '../services/ethereumService.js';
@@ -53,29 +54,51 @@ const getEtherAddress = async(req, res, next) => {
 }
 
 const exportPrivKey = async(req, res, next) => {
-
-    var user = await User.findOne({ email: req.body.email.toLowerCase() })
-    if (!user) {
-        return res.status(403).json({
-        "status": "error",
-        code: 403,
-        "message": "User doesnot exists"
-        });
-    }else if (!user.ETHAddress) {
-        return res.status(403).json({
-        "status": "error",
-        code: 403,
-        "message": "Please generate your address"
-        });
-    } else {
-        let password = req.body.email + config.SECRET_KEY;
-        const privKey = decrypt(user.ETHPrivKey, password);
-        res.status(200).send({
-            "status": "success",
-            code:200,
-            "message": "Success",
-            data: privKey.toString()
-        });
+    try{
+        var user = await User.findOne({ email: req.body.email.toLowerCase() })
+        if (!user) {
+            return res.status(403).json({
+            "status": "error",
+            code: 403,
+            "message": "User doesnot exists"
+            });
+        }else if (!user.ETHAddress) {
+            return res.status(403).json({
+            "status": "error",
+            code: 403,
+            "message": "Please generate your address"
+            });
+        } else {
+            logger.info("Export private key for user",req.body.email);
+            let password = req.body.email + config.SECRET_KEY;
+            let passwordCompare = await bcrypt.compareSync(req.body.walletPassword, user.password);
+            const privKey = decrypt(user.ETHPrivKey, password);
+            if(passwordCompare){
+                logger.info("Successfully exported private key of user",req.body.email);
+                return res.status(200).send({
+                    "status": "success",
+                    code:200,
+                    "message": "Success",
+                    data: privKey.toString()
+                });
+            }
+            else{
+                logger.error("Error in exporting private key because password is incorrect");
+                return res.status(403).json({
+                    "status": "error",
+                    code: 403,
+                    "message": "Incorrect Password"
+                });
+            }
+        }
+    }
+    catch(err){
+        logger.error("Error in exporting private key",err);
+        return res.status(500).send({
+            "status":"error",
+            "code":500,
+            "message":"Error in exporting key"
+        })
     }
 }
   
