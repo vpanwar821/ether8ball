@@ -82,6 +82,7 @@ const exportPrivKey = async(req, res, next) => {
 const importPrivKey = async(req, res, next)=> {
     
     const email = req.body.email;
+    let password = email + config.SECRET_KEY;
     var wallet;
     try {
          wallet = new ethers.Wallet('0x'+req.body.privKey);
@@ -100,7 +101,7 @@ const importPrivKey = async(req, res, next)=> {
             if(wallet.address)
             {
                 let myquery = {email:user.email};
-                let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, email)}};
+                let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, password)}};
                 var result = await User.update(myquery, myvalue);
                 if(result){
                     return res.status(200).send({
@@ -140,13 +141,14 @@ const importThroughUtc = async(req, res, next) => {
     try {
         var json = JSON.stringify(req.body.utcFile);
         var email = req.body.email;
-        var password = req.body.password;
-        var wallet =  await ethers.Wallet.fromEncryptedWallet(json, password);
+        let password = email + config.SECRET_KEY;
+        var walletPassword = req.body.password;
+        var wallet =  await ethers.Wallet.fromEncryptedWallet(json, walletPassword);
         var user =  await User.findOne({ email:email.toLowerCase()});
         
         if(user.addressGenerated === false) {
             let myquery = {email:user.email};
-            let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, email)}};
+            let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, password)}};
             var result = await User.update(myquery, myvalue);
             logger.info("Address generated successfully through json for user.",email);
             return res.status(200).send({
