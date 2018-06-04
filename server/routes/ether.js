@@ -21,7 +21,6 @@ else{
 // generating ethereum address with emailID
 const getEtherAddress = async(req, res, next) => {
     if(req.params.email){
-        logger.info("Ether address generated for user:"+req.params.email);
         let wallet = new ethers.Wallet.createRandom();
         let password = req.params.email + config.SECRET_KEY;
         let privateKey = encrypt(wallet.privateKey,password);
@@ -29,16 +28,18 @@ const getEtherAddress = async(req, res, next) => {
         let myvalue = {$set:{ETHAddress:wallet.address,ETHPrivKey:privateKey, addressGenerated: true}};
 		var result =  await User.update(myquery,myvalue);
 		if(!result){
+            logger.info("Error in generating address of user:"+req.params.email);
             return res.status(500).send({
                 status:"error",
                 code:"500",
-                message:"Ethereum address not generated",
+                message:"Error in generating address",
             });
 		} else {
+            logger.info("Ether address generated of user:"+req.params.email);
             return res.status(200).send({
                 status:"success",
                 code:"200",
-                message:"Successful created wallet address",
+                message:"Successfully generated address",
                 publicKey: wallet.address
             });
 		}
@@ -108,11 +109,8 @@ const importPrivKey = async(req, res, next)=> {
     let password = email + config.SECRET_KEY;
     var wallet;
     try {
-         wallet = new ethers.Wallet('0x'+req.body.privKey);
-         var checkAddress = false;
-
+        wallet = new ethers.Wallet('0x'+req.body.privKey);
         var user  = await User.findOne({ email: email.toLowerCase()})
-        
         if (!user) {
             return res.status(403).json({
             "status": "error",
@@ -127,6 +125,7 @@ const importPrivKey = async(req, res, next)=> {
                 let myvalue = {$set:{ETHAddress:wallet.address,addressGenerated: true, ETHPrivKey:encrypt(wallet.privateKey, password)}};
                 var result = await User.update(myquery, myvalue);
                 if(result){
+                    logger.info("Wallet imported successfully through private key of user",req.body.email);
                     return res.status(200).send({
                         "status": "success",
                         code:200,
@@ -134,25 +133,27 @@ const importPrivKey = async(req, res, next)=> {
                         data: wallet.address
                     });
                 } else {
-                    res.status(500).send({
+                    logger.error("Error in importing wallet address through private key of user",req.body.email);
+                    res.status(403).send({
                         "status": "error",
                         code:500,
-                        message: "Problem in storing existing wallet details",
+                        message: "Error in importing wallet address",
                     });
                 }
             }else{
                 res.status(403).send({
                 "status": "error",
                 code:403,
-                message: "Please enter valid key",
+                message: "Please enter valid key"
                 });
             }
         }
     } catch(err) {
-        res.status(403).send({
+        logger.error("Error in importing wallet address through private key of user",err);
+        res.status(500).send({
             "status": "error",
             code:403,
-            message: "Please enter valid key",
+            message: "Error in importing wallet address",
         });
     }
     
@@ -215,6 +216,8 @@ const etherTransactionHistory = async(req,res,next) => {
     rp(apiUrl).then(json => {
         const transactionHistory = JSON.parse(json).result;
         return res.status(200).json({
+            "status":"success",
+            "code":200,
             "transactions": transactionHistory
         });
     }).catch(e => {
@@ -260,7 +263,7 @@ const etherTransactionHash = async(req,res,next) => {
             return res.status(500).send({
                 "status": "Failure",
                 "code": 500,
-                "message": "Error: Transaction History",
+                "message": "Error: Transaction hash",
             });
     });
 
@@ -277,11 +280,9 @@ const getEtherBalance = async(req, res, next) => {
             })
         }
         logger.info("Ether balance generated for address:"+req.params.address);
-        let balance = await web3.eth.getBalance(req.params.address);
-            
+        let balance = await web3.eth.getBalance(req.params.address);      
         var newBalance = new BigNumber(balance);
         var etherString = newBalance.dividedBy(new BigNumber(10).pow(18)).toNumber();
-            console.log(etherString);
         if(etherString <= 0.000861)
         {
             return res.status(200).send({
