@@ -16,6 +16,8 @@ var UserSchema = new Schema({
     tokenCreatedAt: {type: Date},
     isVerified: {type: Boolean, default: false},
     addressGenerated: {type: Boolean, default: false},
+    otp:{type:Number},
+    otpCreatedAt:{type:Date},
     email: {
         type: String,
         unique: true,

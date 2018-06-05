@@ -2,10 +2,13 @@ const logger = require('../utils/logger').logger;
 const ethers = require('ethers');
 const config = require('config');
 var bcrypt = require('bcrypt-nodejs');
+var mail = require('../services/email.js');
+var moment = require('moment');
 import {encrypt, decrypt} from '../helpers/encryption';
 import rp from 'request-promise';
 import { createRawTransaction, web3} from '../services/ethereumService.js';
 import BigNumber from 'bignumber.js';
+import { getRandom } from '../helpers/randomNumber';
 // import { completeTxMail, cancelTxMail} from '../services/mail';
 var User = require("../models/user");
 const apiKey = config.ETHERSCAN_API_KEY;
@@ -70,28 +73,41 @@ const exportPrivKey = async(req, res, next) => {
             "message": "Please generate your address"
             });
         } else {
-            logger.info("Export private key for user",req.body.email);
-            let password = req.body.email + config.SECRET_KEY;
-            let passwordCompare = await bcrypt.compareSync(req.body.walletPassword, user.password);
-            const privKey = decrypt(user.ETHPrivKey, password);
-            if(passwordCompare){
-                logger.info("Successfully exported private key of user",req.body.email);
-                return res.status(200).send({
-                    "status": "success",
-                    code:200,
-                    "message": "Success",
-                    data: privKey.toString()
-                });
+                logger.info("Export private key for user",req.body.email);
+                if(user.otp == req.body.otp){
+                    let currentTime = moment(new Date());
+                    let otpTime = moment(user.otpCreatedAt);
+                    var newDiff = currentTime.diff(otpTime,'seconds');
+                    if(newDiff > 600){
+                        logger.error("Export private key:Otp has been expired of user:",user.email);
+                        return res.status(403).send({
+                            "status":"error",
+                            "code":403,
+                            "message":"Otp has been expired"
+                        });
+                    }
+                    else{
+                        let password = req.body.email + config.SECRET_KEY;
+                        const privKey = decrypt(user.ETHPrivKey, password);
+                        logger.info("Successfully exported private key of user",req.body.email);
+                            return res.status(200).send({
+                                    "status": "success",
+                                    code:200,
+                                    "message": "Success",
+                                    data: privKey.toString()
+                            });
+                        }
+                }
+                else{
+                    logger.error("Export private key:Otp is incorrect of user:",user.email);
+                    return res.status(403).send({
+                        "status":"error",
+                        "code":403,
+                        "message":"Otp is incorrect"
+                    })
+                }
+            
             }
-            else{
-                logger.error("Error in exporting private key because password is incorrect");
-                return res.status(403).json({
-                    "status": "error",
-                    code: 403,
-                    "message": "Incorrect Password"
-                });
-            }
-        }
     }
     catch(err){
         logger.error("Error in exporting private key",err);
@@ -323,22 +339,34 @@ const transferEther = async(req,res,next) => {
     logger.info("Entered into the transfer ether for user:"+req.body.email);
     
     try{
-        let user = await User.findOne({"email":req.body.email});
-        let passwordCompare = await bcrypt.compareSync(req.body.walletPassword, user.password);
-        if(passwordCompare){
-            const keys = { pubkey: user.ETHAddress, privkey: user.ETHPrivKey };
-            rawTx = await createRawTransaction('', keys, req.body.ethereumAddress, (new BigNumber(etherAmount).times(new BigNumber(10).pow(18))).toNumber(), password, req.body.gas);
-            logger.info("Raw transaction generated successfully");
+        var user = await User.findOne({"email":req.body.email});
+        if(user.otp == req.body.otp){
+            let currentTime = moment(new Date());
+            let otpTime = moment(user.otpCreatedAt);
+            var newDiff = currentTime.diff(otpTime,'seconds');
+            if(newDiff > 600){
+                logger.error("Otp has been expired for user:",user.email);
+                return res.status(403).send({
+                    "status":"error",
+                    "code":403,
+                    "message":"Otp has been expired"
+                });
+            }
+            else{
+                logger.info("Otp is correct generating raw transaction.");
+                const keys = { pubkey: user.ETHAddress, privkey: user.ETHPrivKey };
+                rawTx = await createRawTransaction('', keys, req.body.ethereumAddress, (new BigNumber(etherAmount).times(new BigNumber(10).pow(18))).toNumber(), password, req.body.gas);
+                logger.info("Raw transaction generated successfully");
+            }
         }
-        else{
-            logger.error("Error in exporting private key because password is incorrect");
-            return res.status(403).json({
-                "status": "error",
-                code: 403,
-                "message": "Incorrect Password"
-            });
-        }
-       
+       else{
+            logger.error("Otp is incorrect of user",user.email);
+            return res.status(403).send({
+                "status":"error",
+                "code":403,
+                "message":"Otp is incorrect"
+            })
+        }  
     }
     catch(e){
         logger.error("error in creating the transaction for transfer ether:",e);
@@ -348,7 +376,6 @@ const transferEther = async(req,res,next) => {
             "message": "Error in creating the transaction check parameters.",
         });
     }
-
     try{
         web3.eth.sendSignedTransaction('0x' + rawTx.toString('hex'))
         .on('receipt', async (receipt) =>{
@@ -356,7 +383,8 @@ const transferEther = async(req,res,next) => {
             return res.status(200).send({
                 "status":"success",
                 "code":200,
-                "message":"Ether successfully transferred"
+                "message":"Ether successfully transferred",
+                "transactionHash":receipt.transactionHash
             });
         })
         .on('error',async (error) => {
@@ -376,6 +404,29 @@ const transferEther = async(req,res,next) => {
         "code": 500,
         "message": "Error in transferring Ether",
       });
+    }
+}
+
+const generateOtp = async(req,res,next) => {
+    try{
+        var user = User.findOne({email:req.body.email});
+        var otpCode = getRandom(100000, 999999);
+        var query = {email:req.body.email};
+        var value = {$set:{otp:otpCode,otpCreatedAt:Date.now()}};
+        var result = await User.update(query,value);
+        await mail.OtpMail(req.body.email,otpCode);
+        return res.status(200).send({
+            "status":"success",
+            "code":200,
+            "message":"Success"
+        });
+    }
+    catch(err){
+        return res.status(500).send({
+            "status":"Failure",
+            "code":500,
+            "message":"error"
+        })
     }
 }
 
@@ -440,5 +491,11 @@ module.exports = function (router) {
         next();
     },
         etherTransactionHash
+    );
+
+    router.post('/generateOtp', (req,res,next) => {
+        next();
+    },
+        generateOtp
     );
 }

@@ -188,6 +188,45 @@ module.exports={
             });
         });
     },
+
+    OtpMail: async(sendToEmail,otp) => {
+        return new Promise((resolve,reject) =>{
+
+            var subject = 'Your requested One Time Password';
+            var mailBody =  `<p style='color:#666666;font-size:16px;font-weight:300;margin-top:0;margin-left:0;margin-right:0;margin-bottom:25px;font-family:\"Helvetica Neue\",\"Helvetica\",Helvetica,Arial,sans-serif;line-height:26px'>Hello user, </p> \
+                            <p style='color:#666666;font-size:16px;font-weight:300;margin-top:0;margin-left:0;margin-right:0;margin-bottom:25px;font-family:\"Helvetica Neue\",\"Helvetica\",Helvetica,Arial,sans-serif;line-height:26px'> \
+                                Your requested One Time Password is:`+ otp +`<br><br>
+                                Otp will be valid for 10 minutes.
+                                Please don't share this otp with anyone.
+                            </p>`;
+                
+            var ses_mail = "From: ether8ball <" + config.SENDEREMAIL + ">\n";
+
+            ses_mail = ses_mail + "To: " + sendToEmail + "\n";
+            ses_mail = ses_mail + "Subject: " + subject + "\n";
+            ses_mail = ses_mail + "MIME-Version: 1.0\n";
+            ses_mail = ses_mail + "Content-Type: multipart/mixed; boundary=\"NextPart\"\n\n";
+            ses_mail = ses_mail + "--NextPart\n";
+            ses_mail = ses_mail + "Content-Type: text/html; charset=us-ascii\n\n";
+            ses_mail = ses_mail + compileMail(mailBody) + "\n\n";
+            ses_mail = ses_mail + "--NextPart--";
+            
+            var params = {
+                RawMessage: { Data: new Buffer(ses_mail) },
+                Destinations: [ sendToEmail ],
+
+                Source: "ether8ball <" + config.SENDEREMAIL + ">",
+            };
+            ses.sendRawEmail(params, function(err, data) {
+                    if(err) {
+                        return reject('Sorry failed to send email');
+                    }
+                    else {
+                        return resolve("mail has been sent for  password updation confirmation");
+                    }          
+            });
+        });
+    },
 }
 
 
