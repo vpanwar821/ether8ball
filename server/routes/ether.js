@@ -430,6 +430,16 @@ const generateOtp = async(req,res,next) => {
     }
 }
 
+// const gasEstimate = async(req,res,next) => {
+//     try{
+//         let gas = await estimateGas();
+//         return res.status()
+//     }
+//     catch(err){
+
+//     }
+// }
+
 module.exports = function (router) {
 
     router.get('/getEtherAddress/{email}',
@@ -458,13 +468,6 @@ module.exports = function (router) {
             next();
         },
         importThroughUtc
-    );
-
-    router.get('/etherTransactionHistory/{address}',
-        (req,res,next) => {
-            next();
-        },
-        etherTransactionHistory
     );
 
     router.get('/getEtherBalance/{address}',

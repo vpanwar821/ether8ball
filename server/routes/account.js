@@ -329,7 +329,6 @@ const forgotPassword= async(req, res, next) => {
 
 // set forgotPassword 
 const forgotPasswordSet= async(req, res, next) => {
-	var email =	req.body.email;
 	var token = req.body.token;
 	var password = req.body.password;
 	
