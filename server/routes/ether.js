@@ -218,6 +218,7 @@ const importThroughUtc = async(req, res, next) => {
 
 const etherTransactionHistory = async(req,res,next) => {
 
+    var table = [];
     if (!req.params.address) {
       return res.json({
         "status": "Failure",
@@ -231,10 +232,15 @@ const etherTransactionHistory = async(req,res,next) => {
   
     rp(apiUrl).then(json => {
         const transactionHistory = JSON.parse(json).result;
+        for(let i=transactionHistory.length-1; i>=0; i--)
+        {   
+            var d = new Date((transactionHistory[i].timeStamp * 1000)).toDateString();
+            table.push({hash:transactionHistory[i].hash,date:d});
+        }
         return res.status(200).json({
             "status":"success",
             "code":200,
-            "transactions": transactionHistory
+            "transactions": table
         });
     }).catch(e => {
         logger.error('error in getting in ether transaction history',e);
@@ -307,7 +313,7 @@ const getEtherBalance = async(req, res, next) => {
                     data:{ 
                     "balance" : 0
                     }
-                });
+            });
         }
         else
         {

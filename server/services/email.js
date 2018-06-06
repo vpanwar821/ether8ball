@@ -19,9 +19,6 @@ module.exports={
                             <p style='color:#666666;font-size:16px;font-weight:300;margin-top:0;margin-left:0;margin-right:0;margin-bottom:25px;font-family:\"Helvetica Neue\",\"Helvetica\",Helvetica,Arial,sans-serif;line-height:26px'> \
                                 Congratulations ! <br> You are successfully registered on our portal.<br><br>
                                 <br>
-                                Please verify your account to login on our portal<br>
-                                Please click on this http://localhost:5000/verifyEmail?token=`+token+` link to verify your account. <br>
-                                Note: Do not share your login details with anyone.
 
                                 <br>            
                             </p>`;
