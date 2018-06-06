@@ -184,7 +184,7 @@ module.exports={
                         if(res.n != 0 || res.nModified !=0) {
                             result = "password update";
                         } else {
-                            throw "Error  in updating password";
+                            throw "Error in updating password";
                         }
                         var userName = user.firstName;
                         var sendToEmail = user.email;

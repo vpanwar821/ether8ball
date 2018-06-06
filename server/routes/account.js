@@ -337,7 +337,7 @@ const getUserProfile= async(req, res, next) => {
 };
 
 // forgot password
-const forgotPassword= async(req, res, next) => {
+const forgotPassword = async(req, res, next) => {
 	var email =	req.params.email; 
 	try{
 		let result = await services.forgotPassword(email);
@@ -349,6 +349,7 @@ const forgotPassword= async(req, res, next) => {
 		});
 	}
 	catch (err) {
+		logger.error("Forgot Password Error",err);
 		if(err == 'Please login with gmail'){
 			return res.status(500).send({
 				status:"error",
@@ -385,6 +386,7 @@ const forgotPasswordSet= async(req, res, next) => {
 		});
 	}
 	catch (err) {
+		logger.error("Error in updating password",err);
 		if(err == "Password Reset link has been expired"){
 			return res.status(500).send({
 				status:"error",
