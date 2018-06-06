@@ -6,6 +6,7 @@ var bcrypt = require('bcrypt-nodejs');
 const moment = require('moment');
 const logger = require('../utils/logger').logger;
 var mail = require('./email');
+import { getRandom } from '../helpers/randomNumber';
 
 module.exports={
 
@@ -90,7 +91,7 @@ module.exports={
                 throw "Please login with gmail";
             }
             if(user.facebookSignin != false){
-                throw "Please login with facebook api";
+                throw "Please login with facebook";
             }
             if(!user){
                 throw "user does not exist";                    
@@ -103,6 +104,8 @@ module.exports={
                 var newvalues = {$set:{forgotPassswordToken:token, forgotPassswordTokenCreatedAt: time}};
                 var res = await User.update(myquery,newvalues);
                 if(res.n != 0 || res.nModified !=0) {
+                    result.userName = userName;
+                    result.time = time;
                     result.token = token;
                     result.message = "Token update in database";
                 } else {
@@ -197,12 +200,6 @@ module.exports={
             throw err;
         }
     },
-}
-
-const getRandom = function (min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min;
 }
 
 

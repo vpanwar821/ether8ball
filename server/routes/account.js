@@ -10,216 +10,247 @@ var services = require('../services/accountService.js');
 const logger = require('../utils/logger').logger;
 var mail = require('../services/email.js');
 var crypto = require('crypto');
+var bcrypt = require('bcrypt-nodejs');
 import { getEtherAddress } from '../services/ethereumService';
-
-const getRandom = function (min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min;
-}
 
 const signup = async(req,res, next) => {
 	try {
 		var email =  req.body.email;
 		if (!email || !req.body.password) {
-			return res.status(500).send({
+			return res.status(403).send({
 				status:"error",
-				code:"500",
+				code:"403",
 				message:"Failure",
 			});
 		} else {
-			// var OTPCode = await getRandom(100000, 999999);
-			
-			var buf = await crypto.randomBytes(20);
-			var token = await buf.toString('hex');
-
+			logger.info("Signup for thr user:",email);
 			var newUser = new User({
 				email: email.toLowerCase(),
 				password: req.body.password,
-				name: req.body.name,
-				emailVerifyToken  : token,    
-                tokenCreatedAt : Date.now(),
+				name: req.body.name,  
 			});
 			// save the user
 			newUser.save(async(err)=> {
 				if (err) {
-					return res.status(500).send({
+					logger.error("Email already exist",email);
+					return res.status(403).send({
 						status:"error",
-						code:"500",
+						code:"403",
 						message:"Email already exists",
 					});
 				}
 				else {
-					var mailSending = await mail.welcomeMail(email, token);
+					var mailSending = await mail.welcomeMail(email);
 					
 					if(mailSending) {
 						return res.status(200).send({
 							status:"success",
 							code:"200",
-							message:"Successful created new user",
+							message:"Successfully Registered ",
 						});
 					} else {
-						return res.status(500).send({
+						return res.status(403).send({
 							status:"error",
-							code:"500",
-							message:"Sorry error in sending welcome mail",
+							code:"403",
+							message:"Error in signup",
 						});
 					}
 				}	
 			});
 		}
 	} catch (err) {
+		logger.error("Signup error",err);
 		return res.status(500).send({
 			status:"error",
 			code:"500",
-			message:"Soory error in signup",
+			message:"error during signup",
 		});
 	}
 };
 
 // singin 
 const signin = async(req, res, next) => {
-	User.findOne({
-		email: req.body.email
-	}, {"ETHPrivKey":0,_id:0}, function(err, user) {
-		if (err) throw err;
-		if (!user) {
-			return res.status(500).send({
+	try{
+		var user = await User.findOne({email: req.body.email},{"ETHPrivKey":0,_id:0});
+		if(!user){
+			return res.status(403).send({
 				status:"error",
-				code:"500",
-				message:"Authentication failed. User not found",
-			});
-			
+				code:"403",
+				message:"User doesnot exist"
+			});	
 		}
-		if(user.gmailSignin == false){
-			// check if password matches
-			user.comparePassword(req.body.password, function (err, isMatch) {
-				if (isMatch && !err) {
-					// if user is found and password is right create a token
-					var token = jwt.sign(user.toObject(), config.SECRET);
-					// return the information including token as JSON
-					return res.status(200).send({
-						status:"success",
-						code:"200",
-						token: 'JWT ' + token,
-						message:"JWT token created successfully",
-					});
-				} else {
-					return res.status(500).send({
+		else{
+			if(user.gmailSignin == false){
+				if(user.facebookSignin == false){
+					let isMatch = await bcrypt.compareSync(req.body.password,user.password);
+					if(isMatch){
+						var token = jwt.sign(user.toObject(), config.SECRET);
+							// return the information including token as JSON
+							return res.status(200).send({
+								status:"success",
+								code:"200",
+								token: 'JWT ' + token,
+								message:"Logged in successfully",
+						});
+					}
+					else{
+						return res.status(403).send({
+							status:"error",
+							code:"403",
+							message:"Password is incorrect",
+						});
+					}
+				}
+				else{
+					return res.status(403).send({
 						status:"error",
-						code:"500",
-						message:"Authentication failed. Wrong password",
+						code:"403",
+						message:"Sign in using facebook",
 					});
 				}
-			});
-		}else {
-			return res.status(501).send({
-				status:"loginError",
-				code:"500",
-				message:"Please signIn with Gmail API",
-			});
+			}
+			else{
+				return res.status(403).send({
+					status:"error",
+					code:"403",
+					message:"Sign in using gmail",
+				});
+			}
 		}
-	});
-};
+	}
+	catch(err){
+		logger.error("Sign in failure:",err);
+		return res.status(500).send({
+			status:"error",
+			code:"500",
+			message:"Sign in failure",
+		});
+	}
+}
 
 // login and signup with gmail api
 const loginWithGoogle = async(req,  res, next) => {
-	if (!req.body.email) {
-		return res.status(500).send({
-			status:"error",
-			code:"500",
-			message:"Please pass your emailID",
-		});
-	} else {
-		var getUser = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
-		if(getUser){
-			var token = await jwt.sign(getUser.toObject(), config.SECRET);
-			return res.status(200).send({
-				status:"success",
-				code:"200",
-				message:"Successful getting user profile",
-				token: 'JWT ' + token,
-				
+	try{
+		if (!req.body.email) {
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"Please pass email",
 			});
 		} else {
-			var newUser = new User();
-			newUser.id = req.body.id;
-			newUser.name = req.body.name;
-			newUser.email = req.body.email.toLowerCase();
-			newUser.gmailSignin = true;
-			// save the user
-			newUser.save(async(err)=> {
-				if (err) {
-					return res.status(500).send({
-						status:"error",
-						code:"500",
-						message:"Error in saving user profile",
-					});
-				} else {
-					var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
-					if(result){
-						var token = await jwt.sign(result.toObject(), config.SECRET);
-						return res.status(200).send({
-							status:"success",
-							code:"200",
-							message:"Successful getting user profile",
-							token: 'JWT ' + token,
+			var getUser = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+			if(getUser){
+				var token = await jwt.sign(getUser.toObject(), config.SECRET);
+				logger.info("Login successful using gmail",req.body.email);
+				return res.status(200).send({
+					status:"success",
+					code:"200",
+					message:"Logged in Successfully",
+					token: 'JWT ' + token,
+					
+				});
+			} else {
+				var newUser = new User();
+				newUser.id = req.body.id;
+				newUser.name = req.body.name;
+				newUser.email = req.body.email.toLowerCase();
+				newUser.gmailSignin = true;
+				// save the user
+				newUser.save(async(err)=> {
+					if (err) {
+						logger.error("login error using gmail",req.body.email);
+						return res.status(403).send({
+							status:"error",
+							code:"403",
+							message:"Login Error",
 						});
+					} else {
+						var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+						if(result){
+							var token = await jwt.sign(result.toObject(), config.SECRET);
+							logger.info("login in successful using gmail",req.body.email);
+							return res.status(200).send({
+								status:"success",
+								code:"200",
+								message:"Logged in Successfully",
+								token: 'JWT ' + token,
+							});
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 	}
-};
+	catch(err){
+		logger.error("Error login using gmail",err);
+		return res.status(500).send({
+			"status":"error",
+			"code":500,
+			"message":"Error in login using gmail"
+		})
+	}
+}
 
 // login and signup with Facebook api
 const loginWithFacebook = async(req,  res, next) => {
-	if (!req.body.email) {
-		return res.status(500).send({
-			status:"error",
-			code:"500",
-			message:"Please pass your facebookID",
-		});
-	} else {
-		var getUser = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
-		if(getUser){
-			var token = await jwt.sign(getUser.toObject(), config.SECRET);
-			return res.status(200).send({
-				status:"success",
-				code:"200",
-				message:"Successful getting user profile",
-				token: 'JWT ' + token,
+	try{
+		if (!req.body.email) {
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"Please pass email",
 			});
 		} else {
-			var newUser = new User();
-			newUser.id = req.body.id;
-			newUser.name = req.body.name;
-			newUser.email = req.body.email.toLowerCase();
-			newUser.facebookSignin = true;
-			// save the user
-			newUser.save(async(err)=> {
-				if (err) {
-					return res.status(500).send({
-						status:"error",
-						code:"500",
-						message:"Error in storing user details",
-					});
-				} else {
-					var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
-					if(result){
-						var token = await jwt.sign(user.toObject(), config.SECRET);
-						return res.status(200).send({
-							status:"success",
-							code:"200",
-							message:"Successful getting user profile",
-							token: 'JWT ' + token,
+			var getUser = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+			if(getUser){
+				var token = await jwt.sign(getUser.toObject(), config.SECRET);
+				logger.info("Logged in successfully",req.body.email);
+				return res.status(200).send({
+					status:"success",
+					code:"200",
+					message:"Logged in Successfully",
+					token: 'JWT ' + token,
+				});
+			} else {
+				var newUser = new User();
+				newUser.id = req.body.id;
+				newUser.name = req.body.name;
+				newUser.email = req.body.email.toLowerCase();
+				newUser.facebookSignin = true;
+				// save the user
+				newUser.save(async(err)=> {
+					if (err) {
+						logger.error("Error in signin using facebook",req.body.email);
+						return res.status(403).send({
+							status:"error",
+							code:"403",
+							message:"Login Error",
 						});
+					} else {
+						var result = await User.findOne({"email": req.body.email.toLowerCase()},{"ETHPrivKey":0,_id:0});
+						if(result){
+							var token = await jwt.sign(user.toObject(), config.SECRET);
+							return res.status(200).send({
+								status:"success",
+								code:"200",
+								message:"Logged in Successfully",
+								token: 'JWT ' + token,
+							});
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 	}
-};
+	catch(err){
+		logger.error("Error in sigin using facebook",err);
+		return res.status(500).send({
+			"status":"error",
+			"code":500,
+			"message":"Failure"
+		})
+	}
+}
 
 const verifyEmail = async (req,res,next) => {
     let token = req.params.token;
@@ -310,19 +341,32 @@ const forgotPassword= async(req, res, next) => {
 	var email =	req.params.email; 
 	try{
 		let result = await services.forgotPassword(email);
+		let sendMail = mail.forgotPasswordLink(email,result.userName,result.token);
 		return res.status(200).send({
 			status:"success",
 			code:"200",
 			message:"Success",
-			data: result
 		});
 	}
 	catch (err) {
+		if(err == 'Please login with gmail'){
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"Please login with gmail"
+			});
+		}
+		if(err == 'Please login with facebook'){
+			return res.status(500).send({
+				status:"error",
+				code:"500",
+				message:"Please login with facebook"
+			});
+		}
 		return res.status(500).send({
 			status:"error",
 			code:"500",
 			message:"Unauthorized",
-			data: err
 		});
 	}
 };
@@ -338,7 +382,6 @@ const forgotPasswordSet= async(req, res, next) => {
 			status:"success",
 			code:"200",
 			message:"Success",
-			data: result
 		});
 	}
 	catch (err) {
@@ -346,8 +389,7 @@ const forgotPasswordSet= async(req, res, next) => {
 			return res.status(500).send({
 				status:"error",
 				code:"500",
-				message:"failure",
-				data: err
+				message:"Password reset link has been expired",
 			});
 		}
 		else{

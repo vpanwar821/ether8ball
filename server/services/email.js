@@ -11,9 +11,8 @@ var ses = new aws.SES({
 
 module.exports={
 
-    welcomeMail: async(sendToEmail, token) => {
+    welcomeMail: async(sendToEmail) => {
         return new Promise((resolve,reject) =>{
-            if(token){
                 var subject = 'Welcome mail from Ether8ball';
                 var mailBody = `<p style='color:#666666;font-size:16px;font-weight:300;margin-top:0;margin-left:0;margin-right:0;margin-bottom:25px;font-family:\"Helvetica Neue\",\"Helvetica\",Helvetica,Arial,sans-serif;line-height:26px'>Dear User, </p> \
                             <p style='color:#666666;font-size:16px;font-weight:300;margin-top:0;margin-left:0;margin-right:0;margin-bottom:25px;font-family:\"Helvetica Neue\",\"Helvetica\",Helvetica,Arial,sans-serif;line-height:26px'> \
@@ -22,17 +21,6 @@ module.exports={
 
                                 <br>            
                             </p>`;
-            } else {
-                var subject = 'Email verified successfully Ether8ball';
-                var mailBody = `<p style='color:#666666;font-size:16px;font-weight:300;margin-top:0;margin-left:0;margin-right:0;margin-bottom:25px;font-family:\"Helvetica Neue\",\"Helvetica\",Helvetica,Arial,sans-serif;line-height:26px'>Dear User, </p> \
-                            <p style='color:#666666;font-size:16px;font-weight:300;margin-top:0;margin-left:0;margin-right:0;margin-bottom:25px;font-family:\"Helvetica Neue\",\"Helvetica\",Helvetica,Arial,sans-serif;line-height:26px'> \
-                                Congratulations ! <br> Your account is verified now. <br><br>
-                                <br>
-                                You can login with your login details.
-                                Note: Do not share your login details with anyone.
-                                <br>            
-                            </p>`;
-            }
             
             var ses_mail = "From: ether8ball <" + config.SENDEREMAIL + ">\n";
 
