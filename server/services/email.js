@@ -100,7 +100,7 @@ module.exports={
             var mailBody = `<p style='color:#666666;font-size:16px;font-weight:300;margin-top:0;margin-left:0;margin-right:0;margin-bottom:25px;font-family:\"Helvetica Neue\",\"Helvetica\",Helvetica,Arial,sans-serif;line-height:26px'>Hello `+ userName +`, </p> \
                             <p style='color:#666666;font-size:16px;font-weight:300;margin-top:0;margin-left:0;margin-right:0;margin-bottom:25px;font-family:\"Helvetica Neue\",\"Helvetica\",Helvetica,Arial,sans-serif;line-height:26px'> \
                                 We have initiated forgot password request as per your instructions.<br><br>
-                                Password Reset Link: <a href='http://localhost:4200/set-password?token=`+ token+`>http://localhost:4200/set-password?token=`+ token + `<a>
+                                Password Reset Link: <a href='http://localhost:4200/set-password?token=`+ token+`>http://localhost:4200/set-password?token=`+ token + `</a>
                                 <br>
                                 Forgot Password Link will be valid for 10 mins.   
                                 <br>
