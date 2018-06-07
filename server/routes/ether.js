@@ -4,6 +4,7 @@ const config = require('config');
 var bcrypt = require('bcrypt-nodejs');
 var mail = require('../services/email.js');
 var moment = require('moment');
+var dateFormat = require('dateformat');
 import {encrypt, decrypt} from '../helpers/encryption';
 import rp from 'request-promise';
 import { createRawTransaction, web3} from '../services/ethereumService.js';
@@ -235,7 +236,8 @@ const etherTransactionHistory = async(req,res,next) => {
         for(let i=transactionHistory.length-1; i>=0; i--)
         {   
             var d = new Date((transactionHistory[i].timeStamp * 1000)).toDateString();
-            table.push({hash:transactionHistory[i].hash,date:d});
+            var newDate = dateFormat(d, "longDate");
+            table.push({hash:transactionHistory[i].hash,date:newDate});
         }
         return res.status(200).json({
             "status":"success",
