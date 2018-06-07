@@ -180,12 +180,11 @@ const importPrivKey = async(req, res, next)=> {
 const importThroughUtc = async(req, res, next) => {
     
     try {
-        var json = JSON.stringify(req.body.utcFile);
         var email = req.body.email;
         let password = email + config.SECRET_KEY;
-        var walletPassword = req.body.password;
-        var wallet =  await ethers.Wallet.fromEncryptedWallet(json, walletPassword);
-        var user =  await User.findOne({ email:email.toLowerCase()});
+        var walletPassword = req.body.walletPassword;
+        let wallet = await ethers.Wallet.fromEncryptedWallet(req.body.utcFile,walletPassword);
+        var user = await User.findOne({ email:email.toLowerCase()});
         
         if(user.addressGenerated === false) {
             let myquery = {email:user.email};
@@ -216,6 +215,8 @@ const importThroughUtc = async(req, res, next) => {
     }
     
 }
+
+
 
 const etherTransactionHistory = async(req,res,next) => {
 
