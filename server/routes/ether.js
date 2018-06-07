@@ -210,7 +210,7 @@ const importThroughUtc = async(req, res, next) => {
         return res.status(500).send({
             "status":"error",
             code:403,
-            message: "Error in generating address through json file."
+            message: "Incorrect wallet passsword/UTC file."
         });
     }
     
