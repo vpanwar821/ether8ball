@@ -343,39 +343,64 @@ const getEtherBalance = async(req, res, next) => {
 const transferEther = async(req,res,next) => {
     let rawTx;
     var password = req.body.email + config.SECRET_KEY;
+
     var etherAmount = (req.body.value)- 0.000861;
    
     logger.info("Entered into the transfer ether for user:"+req.body.email);
     
     try{
-        var user = await User.findOne({"email":req.body.email});
-        if(user.otp == req.body.otp){
-            let currentTime = moment(new Date());
-            let otpTime = moment(user.otpCreatedAt);
-            var newDiff = currentTime.diff(otpTime,'seconds');
-            if(newDiff > 600){
-                logger.error("Otp has been expired for user:",user.email);
-                return res.status(403).send({
-                    "status":"error",
-                    "code":403,
-                    "message":"Otp has been expired"
-                });
+        if(etherAmount >= 0){
+            var user = await User.findOne({"email":req.body.email});
+            let balance = await web3.eth.getBalance(user.ETHAddress);      
+            var newBalance = new BigNumber(balance);
+            var etherString = newBalance.dividedBy(new BigNumber(10).pow(18)).toNumber();
+            if(etherString >= req.body.value){
+                if(user.otp == req.body.otp){
+                    let currentTime = moment(new Date());
+                    let otpTime = moment(user.otpCreatedAt);
+                    var newDiff = currentTime.diff(otpTime,'seconds');
+                    if(newDiff > 600){
+                        logger.error("Otp has been expired for user:",user.email);
+                        return res.status(403).send({
+                            "status":"error",
+                            "code":403,
+                            "message":"Otp has been expired"
+                        });
+                    }
+                    else{
+                        logger.info("Otp is correct generating raw transaction.");
+                        const keys = { pubkey: user.ETHAddress, privkey: user.ETHPrivKey };
+                        rawTx = await createRawTransaction('', keys, req.body.ethereumAddress, (new BigNumber(etherAmount).times(new BigNumber(10).pow(18))).toNumber(), password, req.body.gas);
+                        logger.info("Raw transaction generated successfully");
+                    }
+                }
+                else{
+                        logger.error("Otp is incorrect of user",user.email);
+                        return res.status(403).send({
+                            "status":"error",
+                            "code":403,
+                            "message":"Otp is incorrect"
+                        })
+                    }  
             }
             else{
-                logger.info("Otp is correct generating raw transaction.");
-                const keys = { pubkey: user.ETHAddress, privkey: user.ETHPrivKey };
-                rawTx = await createRawTransaction('', keys, req.body.ethereumAddress, (new BigNumber(etherAmount).times(new BigNumber(10).pow(18))).toNumber(), password, req.body.gas);
-                logger.info("Raw transaction generated successfully");
+                logger.error("Insufficient balance",user.email);
+                        return res.status(403).send({
+                            "status":"error",
+                            "code":403,
+                            "message":"Insufficient Balance"
+                    })
             }
+            
         }
-       else{
-            logger.error("Otp is incorrect of user",user.email);
-            return res.status(403).send({
-                "status":"error",
-                "code":403,
-                "message":"Otp is incorrect"
-            })
-        }  
+        else{
+            logger.error("Amount is not valid");
+                    return res.status(403).send({
+                        "status":"error",
+                        "code":403,
+                        "message":"Amount is not valid"
+                    })
+        }
     }
     catch(e){
         logger.error("error in creating the transaction for transfer ether:",e);
