@@ -234,11 +234,12 @@ const etherTransactionHistory = async(req,res,next) => {
   
     rp(apiUrl).then(json => {
         const transactionHistory = JSON.parse(json).result;
+    
         for(let i=transactionHistory.length-1; i>=0; i--)
         {   
             var d = new Date((transactionHistory[i].timeStamp * 1000)).toDateString();
             var newDate = dateFormat(d, "longDate");
-            table.push({hash:transactionHistory[i].hash,date:newDate});
+            table.push({hash:transactionHistory[i].hash,date:newDate,from:transactionHistory[i].from});
         }
         return res.status(200).json({
             "status":"success",
