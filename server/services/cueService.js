@@ -53,8 +53,8 @@ export var cueImage =  async(cueId) => {
             __dirname+'/images/bronze/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/bronze/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .colorspace('CMYK')
-            .colorize(255,0,0)
+            // .colorspace('CMYK')
+            // .colorize(255,0,0)
             .write(__dirname+'/images/cueimage/bronze/'+ cueId +'.png', function (err) {
                 if (err) {
                     logger.error("Error in creating the bronze cue",err);     
@@ -79,7 +79,7 @@ export var cueImage =  async(cueId) => {
             __dirname+'/images/silver/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/silver/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .colorize(80, 0, 30)
+            // .colorize(80, 0, 30)
             .write(__dirname+'/images/cueimage/silver/'+ cueId +'.png', function (err) {
                 if (err) {
                     logger.error("Error in creating the silver cue",err);     
@@ -103,7 +103,7 @@ export var cueImage =  async(cueId) => {
             __dirname+'/images/gold/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/gold/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .colorize(80, 0, 30)
+            // .colorize(80, 0, 30)
             .write(__dirname+'/images/cueimage/gold/'+ cueId +'.png', function (err) {
                 if (err) {
                     logger.error("Error in creating the gold cue",err);     
@@ -127,7 +127,7 @@ export var cueImage =  async(cueId) => {
             __dirname+'/images/platinum/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/platinum/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .colorize(80, 0, 30)
+            // .colorize(80, 0, 30)
             .write(__dirname+'/images/cueimage/platinum/'+ cueId +'.png', function (err) {
                 if (err) {
                     logger.error("Error in creating the platinum cue",err);     
@@ -151,7 +151,7 @@ export var cueImage =  async(cueId) => {
             __dirname+'/images/handcrafted/buttcap/'+buttCapGene+'.png',
             __dirname+'/images/handcrafted/bumper/'+bumperGene+'.png',true)
             .geometry('900x768+0+0')
-            .colorize(80, 0, 30)
+            // .colorize(80, 0, 30)
             .write(__dirname+'/images/cueimage/handcrafted/'+ cueId +'.png', function (err) {
                 if (err) {
                     logger.error("Error in creating the handcrafted cue",err);     

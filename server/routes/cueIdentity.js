@@ -47,7 +47,7 @@ const getCuesOfAddress = async(req,res,next) => {
 const getCueDetail = async(req,res,next) => {
     try{
         let cueDetails = await Cue.find({cueId:req.params.cueId});
-        logger.info("Successful in getting cue details for cueid:",req.body.cueId);
+        logger.info("Successful in getting cue details for cueid:",req.params.cueId);
         return res.status(200).json({
             status:"success",
             code:200,
@@ -61,6 +61,26 @@ const getCueDetail = async(req,res,next) => {
             status:"error",
             code:500,
             message:"Error in getting cue details"
+        })
+    }
+}
+
+const getCueListdb = async(req,res,next) => {
+    try{
+        let cueList = await Cue.find({});
+        logger.info("Successful in getting cue list form db");
+        return res.status(200).json({
+            status:"success",
+            code:200,
+            message:"Successful in getting list",
+            data:cueList
+        })
+    }
+    catch(err){
+        return res.status(500).json({
+            status:"error",
+            code:500,
+            message:"Error in getting cue list"
         })
     }
 }
@@ -85,5 +105,12 @@ module.exports = function(router){
             next();
         },
         getCueDetail
+    );
+
+    router.get('/getCueListdb',
+        (req,res,next) => {
+            next();
+        },
+        getCueListdb
     )
 }
